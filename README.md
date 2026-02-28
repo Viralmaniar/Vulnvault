@@ -125,6 +125,7 @@ Use examples to upskill new hires and junior developers.
 Align guidance with internal standards, threat models, and risk appetite.
 Statement stmt = connection.createStatement();
 ResultSet rs = stmt.executeQuery(query);
+---
 
 ---
 
@@ -145,6 +146,7 @@ Assume a developer audience
 Avoid tool‑specific lock‑in where possible
 
 ---
+---
 
 ## Security Philosophy
 VulnVault intentionally focuses on:
@@ -162,11 +164,13 @@ The examples in this repository are for educational purposes only.
 Do not deploy insecure examples to production systems.
 
 ---
+---
 
 ## License
 This project is licensed under the MIT License.
 See the LICENSE file for details.
 
+---
 ---
 
 ## Acknowledgements
