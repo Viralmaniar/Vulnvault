@@ -101,7 +101,7 @@ String query = "SELECT * FROM users WHERE username = '" + username + "'";
 
 Why this matters:
 Untrusted input is directly concatenated into the query, allowing attackers to manipulate SQL logic.
-
+---
 ## How to Use VulnVault
 
 
@@ -126,6 +126,8 @@ Align guidance with internal standards, threat models, and risk appetite.
 Statement stmt = connection.createStatement();
 ResultSet rs = stmt.executeQuery(query);
 
+---
+
 ## Contribution Guidelines
 Contributions are welcome and encouraged.
 You can contribute by:
@@ -142,6 +144,7 @@ Prefer clarity over cleverness
 Assume a developer audience
 Avoid tool‑specific lock‑in where possible
 
+---
 
 ## Security Philosophy
 VulnVault intentionally focuses on:
@@ -152,13 +155,19 @@ Preventative patterns, not reactive fixes
 
 This is not a vulnerability scanner—it’s a security enablement asset.
 
+---
+
 ## Disclaimer
 The examples in this repository are for educational purposes only.
 Do not deploy insecure examples to production systems.
 
+---
+
 ## License
 This project is licensed under the MIT License.
 See the LICENSE file for details.
+
+---
 
 ## Acknowledgements
 Inspired by real‑world security reviews, penetration tests, and lessons learned from building and securing production systems.
