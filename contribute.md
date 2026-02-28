@@ -1,6 +1,6 @@
 # Contributing to VulnVault
 
-Thanks for your interest in contributing to **VulnVault** 🎉
+Thanks for your interest in contributing to **VulnVault** 
 
 This project exists to help developers build secure software through **clear, practical, and accurate guidance**. Contributions that improve clarity, correctness, or coverage are always welcome.
 
@@ -95,4 +95,4 @@ Security is a shared responsibility—collaboration is key.
 ---
 
 Thank you for helping make VulnVault better 🔐
-``
+
