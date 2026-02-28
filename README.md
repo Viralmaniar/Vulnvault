@@ -4,6 +4,9 @@
 
 It provides **clear explanations**, **realistic insecure vs secure code examples**, and **actionable guidance** across **multiple programming languages and frameworks** to help teams build secure applications by default.
 
+<img width="1622" height="650" alt="image" src="https://github.com/user-attachments/assets/f72fc0cd-ffb6-4f0d-b635-70fdc999ee09" />
+
+
 > 🎯 Goal: Uplift the organisation’s application security posture by making secure coding **understandable, accessible, and repeatable**.
 
 ---
