@@ -98,9 +98,10 @@ Each example contrasts **❌ insecure** and **✅ secure** implementations side�
 #### ❌ Insecure
 ```java
 String query = "SELECT * FROM users WHERE username = '" + username + "'";
-
+```
 Why this matters:
 Untrusted input is directly concatenated into the query, allowing attackers to manipulate SQL logic.
+
 ---
 ## How to Use VulnVault
 
@@ -123,9 +124,6 @@ Use examples to upskill new hires and junior developers.
 
 🛡 AppSec Program Enablement
 Align guidance with internal standards, threat models, and risk appetite.
-Statement stmt = connection.createStatement();
-ResultSet rs = stmt.executeQuery(query);
----
 
 ---
 
@@ -133,27 +131,26 @@ ResultSet rs = stmt.executeQuery(query);
 Contributions are welcome and encouraged.
 You can contribute by:
 
-Adding new vulnerabilities
-Expanding language/framework coverage
-Improving insecure/secure examples
-Fixing inaccuracies or edge cases
+- Adding new vulnerabilities
+- Expanding language/framework coverage
+- Improving insecure/secure examples
+- Fixing inaccuracies or edge cases
 
 Guiding principles for contributions:
 
-Keep examples realistic and minimal
-Prefer clarity over cleverness
-Assume a developer audience
-Avoid tool‑specific lock‑in where possible
+- Keep examples realistic and minimal
+- Prefer clarity over cleverness
+- Assume a developer audience
+- Avoid tool‑specific lock‑in where possible
 
----
 ---
 
 ## Security Philosophy
 VulnVault intentionally focuses on:
 
-Root causes, not just symptoms
-Developer decision‑making, not just controls
-Preventative patterns, not reactive fixes
+- Root causes, not just symptoms
+- Developer decision‑making, not just controls
+- Preventative patterns, not reactive fixes
 
 This is not a vulnerability scanner—it’s a security enablement asset.
 
@@ -164,13 +161,11 @@ The examples in this repository are for educational purposes only.
 Do not deploy insecure examples to production systems.
 
 ---
----
 
 ## License
 This project is licensed under the MIT License.
 See the LICENSE file for details.
 
----
 ---
 
 ## Acknowledgements
