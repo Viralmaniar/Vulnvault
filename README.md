@@ -102,6 +102,15 @@ String query = "SELECT * FROM users WHERE username = '" + username + "'";
 Why this matters:
 Untrusted input is directly concatenated into the query, allowing attackers to manipulate SQL logic.
 
+#### ✅ Secure
+
+```
+String query = "SELECT * FROM users WHERE username = ?";
+PreparedStatement ps = connection.prepareStatement(query);
+ps.setString(1, username);
+ResultSet rs = ps.executeQuery();
+```
+
 ---
 ## How to Use VulnVault
 
