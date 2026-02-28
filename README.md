@@ -98,5 +98,69 @@ Each example contrasts **❌ insecure** and **✅ secure** implementations side�
 #### ❌ Insecure
 ```java
 String query = "SELECT * FROM users WHERE username = '" + username + "'";
+
+Why this matters:
+Untrusted input is directly concatenated into the query, allowing attackers to manipulate SQL logic.
+
+How to Use VulnVault
+
+
+📚 Learning & Reference
+Use as a secure coding handbook during development.
+
+
+🔍 Code Reviews
+Link relevant VulnVault pages directly in PR comments.
+
+
+🧪 Security Testing
+Validate whether findings from SAST, DAST, or pentests are exploitable.
+
+
+🎓 Training & Onboarding
+Use examples to upskill new hires and junior developers.
+
+
+🛡 AppSec Program Enablement
+Align guidance with internal standards, threat models, and risk appetite.
 Statement stmt = connection.createStatement();
 ResultSet rs = stmt.executeQuery(query);
+
+Contribution Guidelines
+Contributions are welcome and encouraged.
+You can contribute by:
+
+Adding new vulnerabilities
+Expanding language/framework coverage
+Improving insecure/secure examples
+Fixing inaccuracies or edge cases
+
+Guiding principles for contributions:
+
+Keep examples realistic and minimal
+Prefer clarity over cleverness
+Assume a developer audience
+Avoid tool‑specific lock‑in where possible
+
+
+Security Philosophy
+VulnVault intentionally focuses on:
+
+Root causes, not just symptoms
+Developer decision‑making, not just controls
+Preventative patterns, not reactive fixes
+
+This is not a vulnerability scanner—it’s a security enablement asset.
+
+Disclaimer
+The examples in this repository are for educational purposes only.
+Do not deploy insecure examples to production systems.
+
+License
+This project is licensed under the MIT License.
+See the LICENSE file for details.
+
+Acknowledgements
+Inspired by real‑world security reviews, penetration tests, and lessons learned from building and securing production systems.
+
+🔐 Build secure software. By design. 
