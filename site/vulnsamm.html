@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>VulnVault — OWASP SAMM</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #0b0f1a;
+      --bg-2: #0a1628;
+      --card: rgba(18, 26, 46, 0.78);
+      --card-2: rgba(20, 32, 56, 0.6);
+      --ink: #e8eefc;
+      --muted: rgba(160, 178, 214, 0.85);
+      --accent: #4fd6c8;
+      --accent-2: #f6c453;
+      --accent-3: #5aa6ff;
+      --border: rgba(120, 145, 185, 0.25);
+      --shadow: 0 24px 48px rgba(2, 7, 23, 0.55);
+      --radius: 16px;
+      font-family: "IBM Plex Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: radial-gradient(1200px 800px at 12% -10%, #1c2a4a 0%, transparent 60%),
+                  radial-gradient(900px 700px at 90% 10%, #1d3248 0%, transparent 60%),
+                  linear-gradient(135deg, var(--bg) 0%, var(--bg-2) 100%);
+      color: var(--ink);
+      min-height: 100vh;
+      padding: 1.2rem;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px);
+      background-size: 28px 28px;
+      opacity: 0.18;
+      z-index: -1;
+    }
+
+    h1, h2, h3 {
+      margin: 0 0 0.7rem 0;
+      font-family: "Space Grotesk", "IBM Plex Sans", sans-serif;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+
+    h1 { font-size: 1.9rem; }
+    h2 { font-size: 1.15rem; }
+    h3 { font-size: 0.98rem; }
+
+    p { margin: 0.25rem 0 0.85rem; color: var(--muted); line-height: 1.5; }
+
+    .shell {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      gap: 1rem;
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 1rem 1.2rem;
+      border-radius: 999px;
+      background: rgba(15, 24, 42, 0.7);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--ink);
+      text-decoration: none;
+    }
+
+    .brand-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-3));
+      box-shadow: 0 0 0 5px rgba(90, 166, 255, 0.18);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+    }
+
+    .pill {
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.03);
+      color: var(--ink);
+      border-radius: 999px;
+      padding: 0.35rem 0.8rem;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      transition: border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+    }
+
+    .pill.active {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #0b0f1a;
+      border-color: transparent;
+      box-shadow: 0 0 18px rgba(79, 214, 200, 0.35);
+    }
+
+    .pill:hover { transform: translateY(-1px); border-color: var(--accent); }
+
+    .hero {
+      padding: 1.6rem;
+      border-radius: var(--radius);
+      background: linear-gradient(135deg, rgba(79, 214, 200, 0.12), rgba(90, 166, 255, 0.12));
+      border: 1px solid rgba(125, 166, 214, 0.25);
+      box-shadow: var(--shadow);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1rem;
+    }
+
+    @media (max-width: 1000px) {
+      .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 700px) {
+      .grid { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+      .nav { border-radius: 18px; }
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      padding: 1rem;
+      min-height: 140px;
+      backdrop-filter: blur(18px);
+      animation: rise 0.5s ease both;
+    }
+
+    .card.soft { background: var(--card-2); }
+
+    .list {
+      padding-left: 1.1rem;
+      margin: 0.2rem 0 0;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .list li { margin-bottom: 0.35rem; }
+
+    .matrix-wrap {
+      overflow-x: auto;
+      padding-bottom: 0.2rem;
+    }
+
+    .matrix {
+      display: grid;
+      grid-template-columns: minmax(140px, 1fr) repeat(3, minmax(180px, 1fr));
+      gap: 0.5rem;
+      font-size: 0.78rem;
+      align-items: stretch;
+      min-width: 560px;
+    }
+
+    .matrix .cell {
+      padding: 0.5rem 0.6rem;
+      border-radius: 12px;
+      border: 1px solid rgba(120,145,185,0.22);
+      background: rgba(255,255,255,0.03);
+      line-height: 1.35;
+    }
+
+    .matrix .head {
+      background: rgba(79, 214, 200, 0.08);
+      border-color: rgba(79, 214, 200, 0.35);
+      font-weight: 600;
+      color: var(--ink);
+    }
+
+    .span-full { grid-column: 1 / -1; }
+
+    .map-controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+      margin-bottom: 0.6rem;
+    }
+
+    .map-actions {
+      display: flex;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+    }
+
+    .map-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+    }
+
+    .map-table th,
+    .map-table td {
+      padding: 0.5rem 0.55rem;
+      border-bottom: 1px solid rgba(120,145,185,0.2);
+      vertical-align: top;
+      text-align: left;
+    }
+
+    .map-table th {
+      color: var(--muted);
+      text-transform: uppercase;
+      font-size: 0.68rem;
+      letter-spacing: 0.08em;
+    }
+
+    .map-table td[contenteditable="true"] {
+      background: rgba(255,255,255,0.02);
+      border-radius: 8px;
+      outline: none;
+    }
+
+    .map-table td[contenteditable="true"]:focus {
+      box-shadow: 0 0 0 1px rgba(79, 214, 200, 0.6);
+      border-color: rgba(79, 214, 200, 0.6);
+    }
+
+    .map-select {
+      background: rgba(255,255,255,0.04);
+      color: var(--ink);
+      border: 1px solid rgba(120,145,185,0.35);
+      border-radius: 999px;
+      padding: 0.2rem 0.55rem;
+      font-size: 0.75rem;
+    }
+
+    .map-output {
+      margin-top: 0.6rem;
+      background: rgba(9, 16, 34, 0.5);
+      border: 1px solid rgba(120,145,185,0.25);
+      border-radius: 12px;
+      padding: 0.6rem;
+      font-size: 0.75rem;
+      color: var(--muted);
+      white-space: pre-wrap;
+      display: none;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+      border: 1px solid rgba(120,145,185,0.35);
+      font-size: 0.72rem;
+      color: var(--muted);
+      background: rgba(255,255,255,0.04);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .section {
+      display: none;
+      animation: fadeIn 0.4s ease;
+    }
+
+    .section.active { display: block; }
+
+    .kpi {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.8rem;
+      padding: 0.7rem 0.9rem;
+      border-radius: 12px;
+      border: 1px solid rgba(120,145,185,0.25);
+      background: rgba(255,255,255,0.03);
+      font-size: 0.85rem;
+    }
+
+    .kpi strong { font-size: 1.1rem; color: var(--ink); }
+
+    .footer {
+      margin-top: 1.5rem;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.78rem;
+    }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <div class="nav">
+      <a class="brand" href="vulnvault.html"><span class="brand-dot"></span>VulnVault SAMM</a>
+      <div class="nav-links" id="nav-links">
+        <a class="pill" href="vulnvault.html">Home</a>
+      </div>
+    </div>
+
+    <section class="hero">
+      <h1>OWASP SAMM Integration</h1>
+      <p>Add OWASP SAMM to VulnVault to evaluate, formulate, and implement a tailored software security strategy. SAMM provides a measurable, risk-driven approach suitable for any SDLC by focusing on 15 security practices across 5 business functions.</p>
+      <div class="grid">
+        <div class="card soft">
+          <h3>Purpose</h3>
+          <p>Operationalize SAMM across teams with measurable maturity, evidence, and roadmaps tied to VulnVault signals.</p>
+          <div class="tag">SPA Mode</div>
+        </div>
+        <div class="card soft">
+          <h3>Scope</h3>
+          <ul class="list">
+            <li>Define SAMM taxonomy and maturity levels.</li>
+            <li>Map VulnVault datasets to practices.</li>
+            <li>Support assessment workflows and scoring.</li>
+            <li>Manual plus data-driven evidence.</li>
+          </ul>
+        </div>
+        <div class="card soft">
+          <h3>Reference Model</h3>
+          <p>5 business functions, 15 practices, maturity levels 1-3 per practice.</p>
+          <div class="kpi"><span>Practices</span><strong>15</strong></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section active" id="section-overview"></section>
+    <section class="section" id="section-approach"></section>
+    <section class="section" id="section-mvp"></section>
+    <section class="section" id="section-future"></section>
+
+    <div class="footer">Single-page application view. No database layer required.</div>
+  </div>
+
+  <script>
+    const SECTIONS = [
+      { id: "overview", label: "Overview" },
+      { id: "approach", label: "Approach" },
+      { id: "mvp", label: "MVP" },
+      { id: "future", label: "Future" }
+    ];
+
+    const MODEL = {
+      functions: [
+        { name: "Governance", practices: ["Strategy & Metrics", "Policy & Compliance", "Education & Guidance"] },
+        { name: "Design", practices: ["Threat Assessment", "Security Requirements", "Secure Architecture"] },
+        { name: "Implementation", practices: ["Secure Build", "Secure Deployment", "Defect Management"] },
+        { name: "Verification", practices: ["Security Testing", "Architecture Assessment", "Requirements Driven Testing"] },
+        { name: "Operations", practices: ["Incident Management", "Environment Management", "Operational Management"] }
+      ],
+      mapping: [
+        "SAST rules -> Secure Build, Defect Management, Security Testing",
+        "Secrets findings -> Secure Deployment, Operational Management",
+        "IaC findings -> Secure Architecture, Environment Management",
+        "License findings -> Policy & Compliance",
+        "SCM config findings -> Strategy & Metrics, Policy & Compliance",
+        "Container best practices -> Secure Deployment, Environment Management"
+      ]
+    };
+
+    const MAPPING_DEFAULTS = [
+      {
+        dataset: "SAST rules",
+        primary: "Secure Build; Defect Management",
+        secondary: "Security Testing",
+        evidence: "SAST findings, rule coverage, remediation examples",
+        gap: "Shows code-level gaps and missing secure build controls",
+        rationale: "Maps static analysis signals to build-time security and defect handling",
+        confidence: "High"
+      },
+      {
+        dataset: "Secrets findings",
+        primary: "Secure Deployment",
+        secondary: "Operational Management",
+        evidence: "Secret detections, rotation guidance, policy violations",
+        gap: "Highlights operational exposure and deployment hygiene gaps",
+        rationale: "Secrets indicate deployment and operational control weaknesses",
+        confidence: "High"
+      },
+      {
+        dataset: "IaC findings",
+        primary: "Secure Architecture; Environment Management",
+        secondary: "Threat Assessment",
+        evidence: "IaC misconfigurations, cloud control gaps",
+        gap: "Reveals architectural and environment hardening gaps",
+        rationale: "Infrastructure controls map to design and environment practices",
+        confidence: "Medium"
+      },
+      {
+        dataset: "License findings",
+        primary: "Policy & Compliance",
+        secondary: "Strategy & Metrics",
+        evidence: "License policy breaches, OSI status, usage counts",
+        gap: "Shows governance and compliance maturity shortfalls",
+        rationale: "License governance demonstrates policy enforcement",
+        confidence: "Medium"
+      },
+      {
+        dataset: "SCM config findings",
+        primary: "Strategy & Metrics; Policy & Compliance",
+        secondary: "Education & Guidance",
+        evidence: "Branch protection, review rules, workflow controls",
+        gap: "Signals governance guardrail gaps and process drift",
+        rationale: "SCM settings reflect governance and policy controls",
+        confidence: "High"
+      },
+      {
+        dataset: "Container best practices",
+        primary: "Secure Deployment; Environment Management",
+        secondary: "Operational Management",
+        evidence: "Image hardening checks, base image risks",
+        gap: "Shows deployment posture and runtime hygiene gaps",
+        rationale: "Container hardening aligns with deployment and ops maturity",
+        confidence: "Medium"
+      }
+    ];
+
+    let mappingState = cloneMapping(MAPPING_DEFAULTS);
+
+    function cloneMapping(rows) {
+      return JSON.parse(JSON.stringify(rows));
+    }
+
+    const nav = document.getElementById("nav-links");
+    SECTIONS.forEach((s, idx) => {
+      const btn = document.createElement("button");
+      btn.className = "pill" + (idx === 0 ? " active" : "");
+      btn.textContent = s.label;
+      btn.addEventListener("click", () => setActive(s.id));
+      nav.appendChild(btn);
+    });
+
+    function setActive(id) {
+      document.querySelectorAll(".section").forEach(el => el.classList.remove("active"));
+      const target = document.getElementById(`section-${id}`);
+      if (target) target.classList.add("active");
+      document.querySelectorAll(".pill").forEach(p => p.classList.remove("active"));
+      const idx = SECTIONS.findIndex(s => s.id === id);
+      if (idx >= 0) nav.children[idx].classList.add("active");
+      window.location.hash = id;
+    }
+
+    function renderOverview() {
+      const el = document.getElementById("section-overview");
+      const matrixRows = MODEL.functions.map(fn => {
+        return `
+          <div class="cell head">${fn.name}</div>
+          ${fn.practices.map(p => `<div class="cell">${p}</div>`).join("")}
+        `;
+      }).join("");
+
+      const mappingRows = mappingState.map((row, idx) => `
+        <tr data-index="${idx}">
+          <td>${row.dataset}</td>
+          <td contenteditable="true" data-field="primary">${row.primary}</td>
+          <td contenteditable="true" data-field="secondary">${row.secondary}</td>
+          <td contenteditable="true" data-field="evidence">${row.evidence}</td>
+          <td contenteditable="true" data-field="gap">${row.gap}</td>
+          <td contenteditable="true" data-field="rationale">${row.rationale}</td>
+          <td>
+            <select class="map-select" data-field="confidence">
+              ${["High","Medium","Low"].map(opt => `<option ${row.confidence===opt?"selected":""}>${opt}</option>`).join("")}
+            </select>
+          </td>
+        </tr>
+      `).join("");
+
+      el.innerHTML = `
+        <div class="grid">
+          <div class="card">
+            <h2>Reference Model (SAMM v2)</h2>
+            <p>Five business functions, each with three practices. Maturity measured across levels 1-3.</p>
+            <div class="matrix-wrap">
+              <div class="matrix">
+                <div class="cell head">Function</div>
+                <div class="cell head">Practice 1</div>
+                <div class="cell head">Practice 2</div>
+                <div class="cell head">Practice 3</div>
+                ${matrixRows}
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <h2>Scope Highlights</h2>
+            <ul class="list">
+              <li>Define SAMM taxonomy (functions, practices, maturity levels).</li>
+              <li>Map VulnVault datasets to SAMM practices.</li>
+              <li>Support assessment workflows, scoring, and reporting.</li>
+              <li>Manual input plus data-driven evidence signals.</li>
+            </ul>
+            <div class="kpi"><span>Functions</span><strong>5</strong></div>
+          </div>
+          <div class="card">
+            <h2>Signal Mapping (Example)</h2>
+            <ul class="list">
+              ${MODEL.mapping.map(m => `<li>${m}</li>`).join("")}
+            </ul>
+            <div class="tag">Editable Mapping</div>
+          </div>
+          <div class="card span-full">
+            <div class="map-controls">
+              <div>
+                <h2>Detailed Mapping (Editable)</h2>
+                <p>Use this table for GAP assessment. Edits are local to this page session.</p>
+              </div>
+              <div class="map-actions">
+                <button class="pill" id="reset-mapping">Reset</button>
+                <button class="pill" id="export-mapping">Export JSON</button>
+              </div>
+            </div>
+            <div class="card soft">
+              <table class="map-table" id="mapping-table">
+                <thead>
+                  <tr>
+                    <th>Dataset</th>
+                    <th>Primary Practices</th>
+                    <th>Secondary Practices</th>
+                    <th>Evidence Signals</th>
+                    <th>GAP Insight</th>
+                    <th>Rationale</th>
+                    <th>Confidence</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${mappingRows}
+                </tbody>
+              </table>
+              <div class="map-output" id="mapping-output"></div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      wireMappingControls();
+    }
+
+    function wireMappingControls() {
+      const table = document.getElementById("mapping-table");
+      const output = document.getElementById("mapping-output");
+      const resetBtn = document.getElementById("reset-mapping");
+      const exportBtn = document.getElementById("export-mapping");
+      if (!table || !resetBtn || !exportBtn) return;
+
+      table.addEventListener("input", (event) => {
+        const cell = event.target.closest("td[contenteditable='true']");
+        if (!cell) return;
+        const row = cell.closest("tr");
+        const idx = Number(row?.dataset.index || -1);
+        const field = cell.dataset.field;
+        if (idx >= 0 && field) mappingState[idx][field] = cell.textContent.trim();
+      });
+
+      table.addEventListener("change", (event) => {
+        const select = event.target.closest("select[data-field='confidence']");
+        if (!select) return;
+        const row = select.closest("tr");
+        const idx = Number(row?.dataset.index || -1);
+        if (idx >= 0) mappingState[idx].confidence = select.value;
+      });
+
+      resetBtn.addEventListener("click", () => {
+        mappingState = cloneMapping(MAPPING_DEFAULTS);
+        renderOverview();
+      });
+
+      exportBtn.addEventListener("click", () => {
+        output.textContent = JSON.stringify(mappingState, null, 2);
+        output.style.display = "block";
+      });
+    }
+
+    function renderApproach() {
+      const el = document.getElementById("section-approach");
+      el.innerHTML = `
+        <div class="grid">
+          <div class="card">
+            <h2>1) Data Model and Storage</h2>
+            <ul class="list">
+              <li>Define SAMM schema: functions, practices, maturity levels.</li>
+              <li>Store taxonomy as static versioned data (e.g., samm-v2.json).</li>
+              <li>Support assessments, scores, and mappings.</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h2>2) Practice Taxonomy</h2>
+            <ul class="list">
+              <li>Embed practice definitions, activities, and metrics.</li>
+              <li>Include typical evidence artifacts per level.</li>
+              <li>Provide short guidance summaries.</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h2>3) Mapping Signals</h2>
+            <ul class="list">
+              <li>Baseline mapping from datasets to practices.</li>
+              <li>Admin-editable mapping with rationale and confidence.</li>
+              <li>Coverage indicators per practice.</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h2>4) Assessment Workflow</h2>
+            <ol class="list">
+              <li>Select org/project and SAMM version.</li>
+              <li>Pre-fill evidence from VulnVault signals.</li>
+              <li>Manual validation and adjustments.</li>
+              <li>Score practices and capture evidence links.</li>
+              <li>Generate gaps and roadmap suggestions.</li>
+            </ol>
+          </div>
+          <div class="card">
+            <h2>5) Scoring and Evidence</h2>
+            <ul class="list">
+              <li>Level achieved when required activities are met.</li>
+              <li>Partial fulfillment via percent indicators.</li>
+              <li>Evidence: VulnVault rules, reports, external artifacts.</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h2>6) Reporting and Roadmap</h2>
+            <ul class="list">
+              <li>Overall maturity and per-function scores.</li>
+              <li>Trends over time.</li>
+              <li>Roadmap with prioritized next-level activities.</li>
+              <li>Export PDF/CSV for audits.</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h2>7) UI/UX</h2>
+            <ul class="list">
+              <li>Matrix overview with drill-down details.</li>
+              <li>Consistent pill controls and tables.</li>
+              <li>Data freshness and mapping coverage badges.</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h2>8) API Design</h2>
+            <ul class="list">
+              <li>GET /samm/taxonomy</li>
+              <li>GET /samm/mappings</li>
+              <li>POST /samm/assessments</li>
+              <li>PUT /samm/assessments/{id}</li>
+              <li>GET /samm/assessments/{id}</li>
+              <li>GET /samm/assessments/{id}/report</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h2>9) Security and Privacy</h2>
+            <ul class="list">
+              <li>RBAC for assessment edits.</li>
+              <li>Mask sensitive evidence by default.</li>
+              <li>Audit log for mappings and scores.</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h2>10) Testing and Validation</h2>
+            <ul class="list">
+              <li>Unit tests for scoring and mapping logic.</li>
+              <li>Snapshot tests for taxonomy rendering.</li>
+              <li>E2E tests for assessment flows.</li>
+            </ul>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderMvp() {
+      const el = document.getElementById("section-mvp");
+      el.innerHTML = `
+        <div class="grid">
+          <div class="card">
+            <h2>MVP Milestone</h2>
+            <ul class="list">
+              <li>Taxonomy rendering</li>
+              <li>Basic mapping to VulnVault datasets</li>
+              <li>Manual scoring per practice</li>
+              <li>Summary report export</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h2>Assessment Snapshot</h2>
+            <div class="kpi"><span>Practices scored</span><strong>15</strong></div>
+            <div class="kpi"><span>Evidence coverage</span><strong>Draft</strong></div>
+            <div class="kpi"><span>Report status</span><strong>Ready</strong></div>
+          </div>
+          <div class="card">
+            <h2>Workflow Modes</h2>
+            <ul class="list">
+              <li>Wizard for first-time assessors</li>
+              <li>Advanced view for audits</li>
+            </ul>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderFuture() {
+      const el = document.getElementById("section-future");
+      el.innerHTML = `
+        <div class="grid">
+          <div class="card">
+            <h2>Future Enhancements</h2>
+            <ul class="list">
+              <li>Automated scoring suggestions from signals and KPIs</li>
+              <li>Multi-team benchmarking</li>
+              <li>Custom practice weighting and risk profiles</li>
+              <li>Integration with Teams bot for SAMM queries</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h2>Roadmap Focus</h2>
+            <p>Prioritize high-risk gaps and maturity climbs that reduce exposure fastest.</p>
+            <div class="tag">Risk-Driven</div>
+          </div>
+          <div class="card">
+            <h2>Data Freshness</h2>
+            <p>Show last updated times per dataset and per assessment snapshot.</p>
+            <div class="tag">Visibility</div>
+          </div>
+        </div>
+      `;
+    }
+
+    renderOverview();
+    renderApproach();
+    renderMvp();
+    renderFuture();
+
+    const initial = window.location.hash.replace("#", "") || "overview";
+    if (SECTIONS.some(s => s.id === initial)) setActive(initial);
+  </script>
+</body>
+</html>

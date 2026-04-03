@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SCM Configuration Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <style>:root {
+    color-scheme: light dark;
+    --bg: #0e1117;
+    --card-bg: #151b26;
+    --accent: #4cc9f0;
+    --accent-2: #ffb703;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --font-body: "Aptos", "Inter", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    --color-surface: rgba(9, 16, 34, 0.78);
+    --color-surface-alt: rgba(13, 23, 47, 0.68);
+    --color-surface-soft: rgba(12, 21, 45, 0.6);
+    --color-border: rgba(123, 139, 170, 0.2);
+    --color-text: #eef1fa;
+    --color-muted: rgba(150, 166, 199, 0.85);
+    --color-primary: #8caeff;
+    --color-accent: #4fd6c8;
+    font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+body {
+    margin: 0;
+    padding: 1.2rem;
+    background: #05070d;
+    color: var(--text);
+    font-size: 0.875rem;
+    line-height: 1.4;
+}
+body.is-page {
+    font-family: var(--font-body);
+    letter-spacing: -0.01em;
+    min-height: 100vh;
+}
+body.is-page::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(135deg, #050b1d 0%, #081b3d 50%, #0c224a 100%);
+    z-index: -1;
+}
+h1, h2, h3 {
+    margin: 0 0 0.6rem 0;
+    font-weight: 600;
+}
+h1 {
+    font-size: 1.6rem;
+    letter-spacing: 0.01em;
+}
+h2 {
+    font-size: 1rem;
+}
+a { color: var(--accent); }
+.layout {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    column-gap: 1rem;
+    row-gap: 1px;
+}
+@media (max-width: 1200px) { .layout { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 800px) { .layout { grid-template-columns: repeat(1, minmax(0, 1fr)); } }
+.card {
+    background: var(--card-bg);
+    border-radius: 14px;
+    padding: 0.95rem;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.35);
+    margin-bottom: 1px;
+}
+.card.full-span { grid-column: 1 / -1; }
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 0.55rem;
+}
+.summary-card {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 12px;
+    padding: 0.55rem;
+}
+.summary-card h4 {
+    margin: 0;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+.summary-card p {
+    margin: 0.3rem 0 0 0;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+.highlights { padding-left: 1rem; }
+.highlights li { margin-bottom: 0.3rem; font-size: 0.82rem; }
+.bar-list { display: flex; flex-direction: column; gap: 0.45rem; }
+.bar-row { display: flex; flex-direction: column; gap: 0.2rem; }
+.bar-label { display: flex; justify-content: space-between; font-size: 0.78rem; }
+.bar-track { background: rgba(255,255,255,0.08); border-radius: 999px; overflow: hidden; }
+.bar-fill { height: 8px; border-radius: 999px; background: linear-gradient(90deg, var(--accent), var(--accent-2)); }
+.table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+.table thead { color: var(--muted); text-transform: uppercase; font-size: 0.68rem; }
+.table th, .table td { padding: 0.3rem 0.35rem; border-bottom: 1px solid rgba(255,255,255,0.08); vertical-align: top; color: var(--text); }
+.table tbody tr:hover { background: rgba(255,255,255,0.02); }
+.table-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+.table-controls input {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 999px;
+    padding: 0.4rem 0.8rem;
+    color: var(--text);
+    font-size: 0.8rem;
+}
+.filter-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+}
+.filter-buttons button {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 999px;
+    padding: 0.25rem 0.65rem;
+    color: var(--text);
+    font-size: 0.76rem;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+.filter-buttons button.active {
+    background: #4cc9f0;
+    border-color: #4cc9f0;
+    color: #0b1220;
+}
+.table-controls span {
+    color: var(--muted);
+    font-size: 0.76rem;
+    margin-left: auto;
+}
+.table-scroll {
+    max-height: 520px;
+    overflow: auto;
+}
+.meta-desc {
+    color: var(--muted);
+    font-size: 0.78rem;
+    margin-top: 0.2rem;
+}
+th[data-sort] {
+    cursor: pointer;
+    position: relative;
+}
+th[data-sort]::after {
+    content: attr(data-dir);
+    position: absolute;
+    right: 0.2rem;
+    font-size: 0.7rem;
+}
+.site-nav { background: var(--color-surface-soft); border: 1px solid var(--color-border); border-radius: 999px; padding: 1.2rem 1.3rem; box-shadow: 0 26px 52px rgba(1, 5, 21, 0.55); margin-bottom: 1.5rem; backdrop-filter: blur(18px); }
+.site-nav__inner { display: flex; align-items: center; justify-content: space-between; gap: 1.2rem; }
+.site-brand { display: inline-flex; align-items: center; gap: 0.6rem; font-weight: 700; font-size: 0.85rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-text) !important; text-decoration: none; }
+.site-brand__mark { width: 12px; height: 12px; border-radius: 999px; background: linear-gradient(135deg, #26de50, var(--color-accent)); box-shadow: 0 0 0 4px rgba(49, 85, 255, 0.16); display: inline-block; }
+.site-brand__text { color: inherit !important; line-height: 1; }
+.site-menu { display: flex; gap: 1.2rem; align-items: center; }
+.site-menu__link { font-size: 0.8rem; letter-spacing: 0.05em; text-transform: uppercase; font-weight: 600; text-decoration: none; color: var(--color-text) !important; transition: color 0.2s ease; }
+.site-menu__link:hover { color: var(--color-primary) !important; }
+.site-nav__actions { display: flex; align-items: center; gap: 0.6rem; }
+.site-menu__toggle { border: 1px solid var(--color-border); background: transparent; color: var(--color-text); width: 44px; height: 44px; border-radius: 14px; display: inline-flex; align-items: center; justify-content: center; }
+.site-menu__drawer { border-radius: 1.2rem; border: 1px solid var(--color-border); background: var(--color-surface); padding: 1rem; box-shadow: 0 26px 52px rgba(1, 5, 21, 0.55); backdrop-filter: blur(16px); margin-top: 0.75rem; }
+.site-footer { margin-top: 2rem; background: var(--color-surface); border-radius: 1.8rem; padding: 1.6rem; box-shadow: 0 36px 64px rgba(1, 5, 21, 0.6); border: 1px solid var(--color-border); backdrop-filter: blur(16px); text-align: center; }
+.site-footer__inner { display: flex; flex-direction: column; gap: 1rem; align-items: center; }
+.site-footer__copy { font-size: 0.8rem; color: var(--color-muted); margin: 0; }
+.site-footer__nav { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; }
+.site-footer__nav a,
+a.site-footer__nav { color: var(--color-muted); font-size: 0.78rem; letter-spacing: 0.05em; text-transform: uppercase; text-decoration: none; }
+.site-footer__nav a:hover,
+a.site-footer__nav:hover { color: var(--color-primary); }
+.site-footer--social {
+  margin-top: 2rem;
+  background: rgba(12, 21, 45, 0.7);
+  border-radius: 1.8rem;
+  padding: 1.2rem;
+  box-shadow: 0 0 28px rgba(76, 201, 240, 0.25), 0 36px 64px rgba(1, 5, 21, 0.6);
+  border: 1px solid rgba(255,255,255,0.12);
+  backdrop-filter: blur(16px);
+}
+.social-bar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 0.6rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(9, 16, 34, 0.55);
+  box-shadow: 0 0 20px rgba(76, 201, 240, 0.18);
+}
+.social-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.18);
+  background: rgba(255,255,255,0.03);
+  color: var(--text, #eef1fa);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  text-decoration: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+.social-pill:hover {
+  border-color: var(--accent, #4cc9f0);
+  color: var(--accent, #4cc9f0);
+  box-shadow: 0 0 16px rgba(76, 201, 240, 0.35);
+  transform: translateY(-1px);
+}
+.social-pill__icon {
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.02);
+}
+.social-pill__icon svg {
+  width: 14px;
+  height: 14px;
+  display: block;
+  fill: currentColor;
+}
+.social-pill--accent {
+  background: linear-gradient(135deg, #ffd166, #ffb703);
+  color: #0b1220;
+  border-color: rgba(255,183,3,0.8);
+  box-shadow: 0 0 22px rgba(255,183,3,0.45);
+}
+.social-pill--accent:hover {
+  color: #0b1220;
+  border-color: #ffb703;
+  box-shadow: 0 0 28px rgba(255,183,3,0.6);
+}
+.social-pill--accent .social-pill__icon {
+  border-color: rgba(0,0,0,0.2);
+  background: rgba(255,255,255,0.25);
+}
+@media (max-width: 700px) {
+  .social-bar { border-radius: 1.4rem; }
+  .social-pill { width: 100%; justify-content: center; }
+}</style>
+</head>
+<body lang="en-US" class="is-page" data-theme="dark">
+    <div class="container my-auto">
+        <div class="site-nav">
+            <div class="site-nav__inner">
+                <a class="site-brand" href="vulnvault.html"><span class="site-brand__mark"></span><span class="site-brand__text">VulnVault</span></a>
+                <div class="site-menu">
+                    <a class="site-menu__link" href="vulnvault.html">Home</a>
+                    <a class="site-menu__link" href="sast.html">SAST</a>
+                    <a class="site-menu__link" href="secret.html">Secrets</a>
+                    <a class="site-menu__link" href="iac.html">IaC</a>
+                    <a class="site-menu__link" href="License.html">License</a>
+                    <a class="site-menu__link" href="container_secret.html">Container Secrets</a>
+                    <a class="site-menu__link" href="container_best_practices.html">Container Best</a>
+                  <a class="site-menu__link" href="vulnsamm.html">SAMM</a>
+                    <a class="site-menu__link" href="scm_config.html">SCM</a>
+                </div>
+            </div>
+        </div>
+        <main class="page-shell shell">
+            <div class="layout">
+                <div class="card full-span">
+                    <h1>SCM Controls Overview</h1>
+                    <p class="meta-desc">Generated: 2026-01-30 16:22:47</p>
+                    <div class="summary-grid" id="summary-cards">
+                        <div class="summary-card"><h4>Total Controls</h4><p>60</p></div>
+                        <div class="summary-card"><h4>Active Controls</h4><p>60</p></div>
+                        <div class="summary-card"><h4>Disabled</h4><p>0</p></div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h2>Key Insights</h2>
+                    <ul class="highlights"><li>60 active controls (100.0%).</li><li>Medium priority leads with 28 controls.</li><li>Top category: Best practices · 60 controls.</li><li>Top SCM: github · 37 controls.</li><li>Top entity: repository · 24 controls.</li></ul>
+                </div>
+                <div class="card">
+                    <h2>Top Categories</h2>
+                    <div class="bar-list"><div class="bar-row"><div class="bar-label"><span>Best practices</span><span>60</span></div><div class="bar-track"><div class="bar-fill" style="width: 100%;"></div></div></div></div>
+                </div>
+                <div class="card">
+                    <h2>Top SCMs</h2>
+                    <div class="bar-list"><div class="bar-row"><div class="bar-label"><span>github</span><span>37</span></div><div class="bar-track"><div class="bar-fill" style="width: 100%;"></div></div></div><div class="bar-row"><div class="bar-label"><span>gitlab</span><span>23</span></div><div class="bar-track"><div class="bar-fill" style="width: 62%;"></div></div></div></div>
+                </div>
+                <div class="card">
+                    <h2>Top Entities</h2>
+                    <div class="bar-list"><div class="bar-row"><div class="bar-label"><span>repository</span><span>24</span></div><div class="bar-track"><div class="bar-fill" style="width: 100%;"></div></div></div><div class="bar-row"><div class="bar-label"><span>project</span><span>18</span></div><div class="bar-track"><div class="bar-fill" style="width: 75%;"></div></div></div><div class="bar-row"><div class="bar-label"><span>organization</span><span>7</span></div><div class="bar-track"><div class="bar-fill" style="width: 29%;"></div></div></div><div class="bar-row"><div class="bar-label"><span>group</span><span>5</span></div><div class="bar-track"><div class="bar-fill" style="width: 21%;"></div></div></div><div class="bar-row"><div class="bar-label"><span>actions</span><span>4</span></div><div class="bar-track"><div class="bar-fill" style="width: 17%;"></div></div></div><div class="bar-row"><div class="bar-label"><span>runner_group</span><span>2</span></div><div class="bar-track"><div class="bar-fill" style="width: 8%;"></div></div></div></div>
+                </div>
+                <div class="card full-span">
+                    <h2>All SCM Controls</h2>
+                    <div class="table-controls">
+                        <input id="record-search" placeholder="Search id, title, category, scm, entity" />
+                        <div class="filter-buttons" id="record-filter-buttons"></div>
+                        <span id="record-count"></span>
+                    </div>
+                    <div class="table-scroll">
+                        <table class="table" id="records-table">
+                            <thead>
+                                <tr>
+                                    <th data-sort="id" data-dir="">ID</th>
+                                    <th data-sort="title" data-dir="">Title</th>
+                                    <th data-sort="priority" data-dir="">Priority</th>
+                                    <th data-sort="category" data-dir="">Category</th>
+                                    <th data-sort="scm" data-dir="">SCM</th>
+                                    <th data-sort="entity" data-dir="">Entity</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+        <footer class="site-footer site-footer--social">
+  <div class="social-bar">
+    <a class="social-pill" href="https://x.com/maniarviral" target="_blank" rel="noopener">
+      <span class="social-pill__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 4l7.5 8.5L4 20h3.2l5.7-6.5L19 20h1l-7.6-8.6L19.5 4h-3.2l-5 5.8L7.2 4z"/></svg></span>
+      <span>Follow me on X</span>
+    </a>
+    <a class="social-pill" href="https://au.linkedin.com/in/viralmaniar" target="_blank" rel="noopener">
+      <span class="social-pill__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4.98 3.5a2.5 2.5 0 110 5 2.5 2.5 0 010-5zM3 9h4v12H3zM9 9h3.8v1.6h.05c.53-1 1.82-2.06 3.75-2.06 4 0 4.75 2.6 4.75 6v6.46h-4V16.2c0-1.7-.03-3.9-2.37-3.9-2.38 0-2.74 1.86-2.74 3.78V21H9z"/></svg></span>
+      <span>Connect on LinkedIn</span>
+    </a>
+    <a class="social-pill" href="https://github.com/Viralmaniar" target="_blank" rel="noopener">
+      <span class="social-pill__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.58 2 12.24c0 4.52 2.87 8.35 6.84 9.7.5.1.68-.22.68-.48 0-.24-.01-.88-.01-1.73-2.78.62-3.37-1.36-3.37-1.36-.46-1.2-1.12-1.52-1.12-1.52-.92-.64.07-.63.07-.63 1.02.07 1.56 1.07 1.56 1.07.9 1.58 2.36 1.12 2.94.86.09-.67.35-1.12.63-1.38-2.22-.26-4.56-1.14-4.56-5.08 0-1.12.39-2.04 1.03-2.76-.1-.26-.45-1.32.1-2.74 0 0 .84-.27 2.75 1.05a9.3 9.3 0 015 0c1.9-1.32 2.74-1.05 2.74-1.05.56 1.42.2 2.48.1 2.74.64.72 1.03 1.64 1.03 2.76 0 3.95-2.34 4.82-4.57 5.08.36.32.68.94.68 1.9 0 1.38-.01 2.5-.01 2.84 0 .26.18.58.69.48A10.3 10.3 0 0022 12.24C22 6.58 17.52 2 12 2z"/></svg></span>
+      <span>Follow me on GitHub</span>
+    </a>
+    <a class="social-pill" href="https://viralmaniar.github.io/" target="_blank" rel="noopener">
+      <span class="social-pill__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 2h9l5 5v15a2 2 0 01-2 2H6a2 2 0 01-2-2V4a2 2 0 012-2zm8 1v5h5"/><path d="M8 11h8v2H8zm0 4h8v2H8zm0-8h4v2H8z"/></svg></span>
+      <span>Read my blog</span>
+    </a>
+    <a class="social-pill social-pill--accent" href="https://www.preemptivecybersec.com/" target="_blank" rel="noopener">
+      <span class="social-pill__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 6V4a2 2 0 012-2h2a2 2 0 012 2v2h4a2 2 0 012 2v3H3V8a2 2 0 012-2h4zm2 0h2V4h-2v2z"/><path d="M3 12h8v2a1 1 0 001 1h2a1 1 0 001-1v-2h8v7a2 2 0 01-2 2H5a2 2 0 01-2-2v-7z"/></svg></span>
+      <span>Hire me</span>
+    </a>
+  </div>
+</footer>
+    </div>
+    <script id="records-json" type="application/json">[{"id": "github_actions_actions_can_approve_pull_requests", "title": "Workflows Should Not Be Allowed To Approve Pull Requests", "priority": "HIGH", "details": "Your organization allows workflows to open and approve pull requests. This could allow users to bypass code-review restrictions.", "recommendation": "1. Make sure you have admin permissions\n2. Go to the org's settings page\n3. Enter 'Actions - General' tab\n4. Under 'Workflow permissions'\n5. Uncheck 'Allow GitHub actions to create and approve pull requests'\n6. Click 'Save'", "category": "Best practices", "disabled": false, "scm": "github", "entity": "actions", "source": "workflow_permissions", "threat": ["Attackers can exploit this misconfiguration to bypass code-review restrictions by creating a workflow that approves their own pull request and then merging the pull request without anyone noticing, introducing malicious code that would go straight ahead to production."]}, {"id": "github_actions_all_github_actions_are_allowed", "title": "GitHub Actions Should Be Limited To Verified or Explicitly Trusted Actions", "priority": "MEDIUM", "details": "It is recommended to only use GitHub Actions by Marketplace verified creators or explicitly trusted actions. By not restricting which actions are permitted, developers may use actions that were not audited and may be malicious, thus exposing your pipeline to supply chain attacks.", "recommendation": "1. Make sure you have admin permissions\n2. Go to the org's settings page\n3. Enter 'Actions - General' tab\n4. Under 'Policies', Select 'Allow enterprise, and select non-enterprise, actions and reusable workflows'\n5. Check 'Allow actions created by GitHub' and 'Allow actions by Marketplace verified creators'\n6. Set any other used trusted actions under 'Allow specified actions and reusable workflows'\n7. Click 'Save'", "category": "Best practices", "disabled": false, "scm": "github", "entity": "actions", "source": "workflow_permissions", "threat": ["1. Attacker creates a repository with a tempting but malicious custom GitHub Action", "2. An innocent developer / DevOps engineer uses this malicious action", "3. The malicious action has access to the developer repository and could steal its secrets or modify its content"]}, {"id": "github_actions_all_repositories_can_run_github_actions", "title": "GitHub Actions Should Be Restricted To Selected Repositories", "priority": "MEDIUM", "details": "By not limiting GitHub Actions to specific repositories, every user in the organization is able to run arbitrary workflows. This could enable malicious activity such as accessing organization secrets, crypto-mining, etc.", "recommendation": "1. Make sure you have admin permissions\n2. Go to the org's settings page\n3. Enter the 'Actions - General' tab\n4. Under 'Policies', Change 'All repositories' to 'Selected repositories' and select repositories that should be able to run actions\n5. Click 'Save'", "category": "Best practices", "disabled": false, "scm": "github", "entity": "actions", "source": "workflow_permissions", "threat": ["2. Attacker creates new repository in the organization", "3. Attacker creates a workflow file that reads all organization secrets and exfiltrate them", "4. Attacker trigger the workflow", "5. Attacker receives all organization secrets and uses them maliciously"]}, {"id": "github_actions_token_default_permissions_is_read_write", "title": "Default Workflow Token Permission Should Be Read Only", "priority": "MEDIUM", "details": "The default GitHub Action workflow token permission is set to read-write. When creating workflow tokens, it is highly recommended to follow the Principle of Least Privilege and force workflow authors to specify explicitly which permissions they need.", "recommendation": "1. Make sure you have admin permissions\n2. Go to the org's settings page\n3. Enter 'Actions - General' tab\n4. Under 'Workflow permissions'\n5. Select 'Read repository contents permission'\n6. Click 'Save'", "category": "Best practices", "disabled": false, "scm": "github", "entity": "actions", "source": "workflow_permissions", "threat": ["In case of token compromise (due to a vulnerability or malicious third-party GitHub actions), an attacker can use this token to sabotage various assets in your CI/CD pipeline, such as packages, pull-requests, deployments, and more."]}, {"id": "github_organization_default_repository_permission_is_not_none", "title": "Default Member Permissions Should Be Restricted", "priority": "HIGH", "details": "Default repository permissions configuration is not set in the organization, thus every new repository will be accessible by default to all users. It is strongly recommended to remove the default permissions and assign them on demand.", "recommendation": "1. Make sure you have admin permissions\n2. Go to the organization settings page\n3. Enter 'Member privileges' tab\n4. Under 'Base permissions'\n5. Set permissions to 'No permissions'\n6. Click 'Save'", "category": "Best practices", "disabled": false, "scm": "github", "entity": "organization", "source": "member_permissions", "threat": ["Organization members can see the content of freshly created repositories, even if they should be restricted."]}, {"id": "github_organization_non_admins_can_create_public_repositories", "title": "Only Admins Should Be Able To Create Public Repositories", "priority": "MEDIUM", "details": "The organization should be configured to prevent non-admin members from creating public repositories. Creating a public repository may expose sensitive organization code, which, once exposed, may be copied, cached, or stored by external parties. Therefore, it is highly recommended to restrict the option to create public repositories to admins only and reduce the risk of unintentional code exposure. NOTE: You should also verify that repository owners can't change existing repository visibility to be public. If allowed, a malicious user could create a private repo and change it to public. See: https://docs.github.com/en/enterprise-cloud@latest/organizations/managing-organization-settings/restricting-repository-visibility-changes-in-your-organization for further information", "recommendation": "1. Make sure you have admin permissions\n2. Go to the organization settings page\n3. Enter 'Member privileges' tab\n4. Under 'Repository creation'\n5. Toggle off 'Public'\n6. Click 'Save'", "category": "Best practices", "disabled": false, "scm": "github", "entity": "organization", "source": "member_permissions", "threat": ["A member of the organization could inadvertently or maliciously make public an internal repository exposing confidential data."]}, {"id": "github_organization_organization_not_using_single_sign_on", "title": "Organization Should Use Single-Sign-On", "priority": "MEDIUM", "details": "It is recommended to enable access to an organization via SAML single sign-on (SSO) by authenticating through an identity provider (IdP). This allows for central account control and for timely access revocations.", "recommendation": "1. Make sure you have admin permissions\n2. Go to the organization settings page\n3. Enter 'Authentication security' tab\n4. Toggle on 'Enable SAML authentication'\n5. Fill in the remaining SSO configuration as instructed on the screen\n6. Click 'Save'", "category": "Best practices", "disabled": false, "scm": "github", "entity": "organization", "source": "account_access_control", "threat": ["Not using an SSO solution makes it more difficult to track a potentially compromised user's actions across different systems, prevents the organization from defining a common password policy, and makes it challenging to audit different aspects of the user's behavior."]}, {"id": "github_organization_organization_secret_is_stale", "title": "Organization Secrets Should Be Updated At Least Yearly", "priority": "MEDIUM", "details": "Some of the organizations secrets have not been updated for over a year. It is recommended to refresh secret values regularly in order to minimize the risk of breach in case of an information leak.", "recommendation": "1. Enter your organization's landing page\n2. Go to the settings tab\n3. Under the 'Security' title on the left, choose 'Secrets and variables'\n4. Click 'Actions'\n5. Sort secrets by 'Last Updated'\n6. Regenerate every secret older than one year and add the new value to GitHub's secret manager", "category": "Best practices", "disabled": false, "scm": "github", "entity": "organization", "source": "secrets_management", "threat": ["Sensitive data may have been inadvertently made public in the past, and an attacker who holds this data may gain access to your current CI and services. In addition, there may be old or unnecessary tokens that have not been inspected and can be used to access sensitive information."]}, {"id": "github_organization_organization_webhook_doesnt_require_ssl", "title": "Webhooks Should Be Configured To Use SSL", "priority": "LOW", "details": "Webhooks that are not configured with SSL enabled could expose your software to man in the middle attacks (MITM).", "recommendation": "1. Make sure you have admin permissions\n2. Go to the organization settings page\n3. Select 'Webhooks'\n4. Press on the insecure webhook\n5. Verify URL starts with https\n6. Enable 'SSL verification'\n7. Click 'Update webhook'", "category": "Best practices", "disabled": false, "scm": "github", "entity": "organization", "source": "webhooks_configuration", "threat": ["If SSL verification is disabled, any party with access to the target DNS domain can masquerade as your designated payload URL, allowing it freely read and affect the response of any webhook request.", "In the case of GitHub Enterprise Server instances, it may be sufficient only to control the DNS configuration of the network where the instance is deployed, as an attacker can redirect traffic to the target domain in your internal network directly to them, and this is often much easier than compromising an internet-facing domain."]}, {"id": "github_organization_organization_webhook_no_secret", "title": "Webhooks Should Be Configured With A Secret", "priority": "LOW", "details": "Webhooks are not configured with a shared secret to validate the origin and content of the request. This could allow your webhook to be triggered by any bad actor with the URL.", "recommendation": "1. Make sure you have admin permissions\n2. Go to the organization settings page\n3. Select 'Webhooks'\n4. Press on the insecure webhook\n5. Configure a secret\n6. Click 'Update webhook'", "category": "Best practices", "disabled": false, "scm": "github", "entity": "organization", "source": "webhooks_configuration", "threat": ["Not using a webhook secret makes the service receiving the webhook unable to determine the authenticity of the request.", "This allows attackers to masquerade as your organization, potentially creating an unstable or insecure state in other systems."]}, {"id": "github_organization_two_factor_authentication_not_required_for_org", "title": "Two-Factor Authentication Should Be Enforced For The Organization", "priority": "HIGH", "details": "The two-factor authentication requirement is not enabled at the organization level. Regardless of whether users are managed externally by SSO, it is highly recommended to enable this option to reduce the risk of a deliberate or accidental user creation without MFA.", "recommendation": "1. Make sure you have admin permissions\n2. Go to the organization settings page\n3. Enter 'Authentication security' tab\n4. Under 'Two-factor authentication'\n5. Toggle on 'Require two-factor authentication for everyone in the <ORG> organization'\n6. Click 'Save'", "category": "Best practices", "disabled": false, "scm": "github", "entity": "organization", "source": "account_access_control", "threat": ["If an attacker gets the valid credentials for one of the organization’s users they can authenticate to your GitHub organization."]}, {"id": "github_repository_code_review_by_two_members_not_required", "title": "Default Branch Should Require Code Review By At Least Two Reviewers", "priority": "MEDIUM", "details": "In order to comply with separation of duties principle and enforce secure code practices, a code review should be mandatory using the source-code-management built-in enforcement. This option is found in the branch protection setting of the repository.", "recommendation": "Note: The remediation steps apply to legacy branch protections, rules set-based protection should be updated from the rules set page\n1. Make sure you have admin permissions\n2. Go to the repo's settings page\n3. Enter 'Branches' tab\n4. Under 'Branch protection rules'\n5. Click 'Edit' on the default branch rule\n6. Check 'Require a pull request before merging'\n7. Check 'Require approvals'\n8. Set 'Required number of approvals before merging' to 2 or more\n9. Click 'Save changes'", "category": "Best practices", "disabled": false, "scm": "github", "entity": "repository", "source": "branch_protection_rules", "threat": ["Users can merge code without being reviewed, which can lead to insecure code reaching the main branch and production.", "Requiring code review by at least two reviewers further decreases the risk of an insider threat (as merging code requires compromising at least 2 identities with write permissions), and decreases the likelihood of human error in the review process."]}, {"id": "github_repository_code_review_not_limited_to_code_owners", "title": "Default Branch Should Limit Code Review to Code-Owners", "priority": "LOW", "details": "It is recommended to require code review only from designated individuals specified in CODEOWNERS file. Turning this option on enforces that only the allowed owners can approve a code change. This rule evaluates both legacy branch protection rules and GitHub rulesets to ensure code owner review requirements are properly configured.", "recommendation": "Note: The remediation steps apply to legacy branch protections, rules set-based protection should be updated from the rules set page\n1. Make sure you have admin permissions\n2. Go to the repo's settings page\n3. Enter 'Branches' tab\n4. Under 'Branch protection rules'\n5. Click 'Edit' on the default branch rule\n6. Check 'Require a pull request before merging'\n7. Check 'Require review from Code Owners'\n8. Click 'Save changes'", "category": "Best practices", "disabled": false, "scm": "github", "entity": "repository", "source": "branch_protection_rules", "threat": ["A pull request may be approved by any contributor with write access. Specifying specific code owners can ensure review is only done by individuals with the correct expertise required for the review of the changed files, potentially preventing bugs and security risks."]}, {"id": "github_repository_code_review_not_required", "title": "Default Branch Should Require Code Review", "priority": "HIGH", "details": "In order to comply with separation of duties principle and enforce secure code practices, a code review should be mandatory using the source-code-management system's built-in enforcement. This option is found in the branch protection setting of the repository.", "recommendation": "Note: The remediation steps apply to legacy branch protections, rules set-based protection should be updated from the rules set page\n1. Make sure you have admin permissions\n2. Go to the repo's settings page\n3. Enter 'Branches' tab\n4. Under 'Branch protection rules'\n5. Click 'Edit' on the default branch rule\n6. Check 'Require a pull request before merging'\n7. Check 'Require approvals'\n8. Set 'Required number of approvals before merging' to 1 or more\n9. Click 'Save changes'", "category": "Best practices", "disabled": false, "scm": "github", "entity": "repository", "source": "branch_protection_rules", "threat": ["Users can merge code without being reviewed, which can lead to insecure code reaching the main branch and production."]}, {"id": "github_repository_dismisses_stale_reviews", "title": "Default Branch Should Require New Code Changes After Approval To Be Re-Approved", "priority": "LOW", "details": "This security control prevents merging code that was approved but later on changed. Turning it on ensures any new changes must be reviewed again. This setting is part of the branch protection and code-review settings, and hardens the review process. If turned off - a developer can change the code after approval, and push code that is different from the one that was previously allowed. This option is found in the branch protection setting for the repository.", "recommendation": "Note: The remediation steps apply to legacy branch protections, rules set-based protection should be updated from the rules set page\n1. Make sure you have admin permissions\n2. Go to the repo's settings page\n3. Enter 'Branches' tab\n4. Under 'Branch protection rules'\n5. Click 'Edit' on the default branch rule\n6. Check 'Require a pull request before merging'\n7. Check 'Dismiss stale pull request approvals when new commits are pushed'\n8. Click 'Save changes'", "category": "Best practices", "disabled": false, "scm": "github", "entity": "repository", "source": "branch_protection_rules", "threat": ["Buggy or insecure code may be committed after approval and will reach the main branch without review. Alternatively, an attacker can attempt a just-in-time attack to introduce dangerous code just before merge."]}, {"id": "github_repository_forking_allowed_for_repository", "title": "Forking Should Not Be Allowed for Private/Internal Repositories", "priority": "LOW", "details": "Forking private or internal repositories can lead to unauthorized spread and potential exposure of sensitive source code. It is recommended to disable forking for private repositories in the repository or the organization configuration to maintain control over the source code. If forking is necessary, it should be enabled selectively by admins for specific collaboration needs on private repositories.", "recommendation": "1. Make sure you have admin permissions\n2. Go to the repo's settings page\n3. Enter 'General' tab\n4. Under 'Features', Toggle off 'Allow forking'", "category": "Best practices", "disabled": false, "scm": "github", "entity": "repository", "source": "repository_visibility", "threat": ["Forked repositories cause more code and secret sprawl in the organization as forks are independent copies of the repository and need to be tracked separately, making it more difficult to keep track of sensitive assets and contain potential incidents."]}, {"id": "github_repository_missing_default_branch_protection", "title": "Default Branch Should Be Protected", "priority": "MEDIUM", "details": "Branch protection is not enabled for this repository’s default branch. Protecting branches ensures new code changes must go through a controlled merge process and allows enforcement of code review as well as other security tests. This issue is raised if the default branch protection is turned off.", "recommendation": "1. Make sure you have admin permissions\n2. Go to the repo's settings page\n3. Enter 'Branches' tab\n4. Under 'Branch protection rules'\n5. Click 'Add rule'\n6. Set 'Branch name pattern' as the default branch name (usually 'main' or 'master')\n7. Set desired protections\n8. Click 'Create' and save the rule", "category": "Best practices", "disabled": false, "scm": "github", "entity": "repository", "source": "branch_protection_rules", "threat": ["Any contributor with write access may push potentially dangerous code to this repository, making it easier to compromise and difficult to audit."]}, {"id": "github_repository_missing_default_branch_protection_deletion", "title": "Default Branch Deletion Protection Should Be Enabled", "priority": "MEDIUM", "details": "The history of the default branch is not protected against deletion for this repository.", "recommendation": "Note: The remediation steps apply to legacy branch protections, rules set-based protection should be updated from the rules set page\n1. Make sure you have admin permissions\n2. Go to the repo's settings page\n3. Enter 'Branches' tab\n4. Under 'Branch protection rules'\n5. Click 'Edit' on the default branch rule\n6. Uncheck 'Allow deletions', Click 'Save changes'", "category": "Best practices", "disabled": false, "scm": "github", "entity": "repository", "source": "branch_protection_rules", "threat": ["Rewriting project history can make it difficult to trace back when bugs or security issues were introduced, making them more difficult to remediate."]}, {"id": "github_repository_missing_default_branch_protection_force_push", "title": "Default Branch Should Not Allow Force Pushes", "priority": "MEDIUM", "details": "The history of the default branch is not protected against changes for this repository. Protecting branch history ensures every change that was made to code can be retained and later examined. This issue is raised if the default branch history can be modified using force push.", "recommendation": "Note: The remediation steps apply to legacy branch protections, rules set based protection should be updated from the rules set page\n1. Make sure you have admin permissions\n2. Go to the repo's settings page\n3. Enter 'Branches' tab\n4. Under 'Branch protection rules'\n5. Click 'Edit' on the default branch rule\n6. Uncheck 'Allow force pushes'\n7. Click 'Save changes'", "category": "Best practices", "disabled": false, "scm": "github", "entity": "repository", "source": "branch_protection_rules", "threat": ["Rewriting project history can make it difficult to trace back when bugs or security issues were introduced, making them more difficult to remediate."]}, {"id": "github_repository_no_conversation_resolution", "title": "Default Branch Should Require All Conversations To Be Resolved Before Merge", "priority": "LOW", "details": "Require all Pull Request conversations to be resolved before merging. Check this to avoid bypassing/missing a Pull Request comment.", "recommendation": "Note: The remediation steps apply to legacy branch protections, rules set-based protection should be updated from the rules set page\n1. Make sure you have admin permissions\n2. Go to the repo's settings page\n3. Enter 'Branches' tab\n4. Under 'Branch protection rules'\n5. Click 'Edit' on the default branch rule\n6. Check 'Require conversation resolution before merging'\n7. Click 'Save changes'", "category": "Best practices", "disabled": false, "scm": "github", "entity": "repository", "source": "branch_protection_rules", "threat": ["Allowing the merging of code without resolving all conversations can promote poor and vulnerable code, as important comments may be forgotten or deliberately ignored when the code is merged."]}, {"id": "github_repository_no_signed_commits", "title": "Default Branch Should Require All Commits To Be Signed", "priority": "LOW", "details": "Require all commits to be signed and verified", "recommendation": "Note: The remediation steps apply to legacy branch protections, rules set-based protection should be updated from the rules set page\n1. Make sure you have admin permissions\n2. Go to the repo's settings page\n3. Enter 'Branches' tab\n4. Under 'Branch protection rules'\n5. Click 'Edit' on the default branch rule\n6. Check 'Require signed commits'\n7. Click 'Save changes'", "category": "Best practices", "disabled": false, "scm": "github", "entity": "repository", "source": "branch_protection_rules", "threat": ["A commit containing malicious code may be crafted by a malicious actor that has acquired write access to the repository to initiate a supply chain attack. Commit signing provides another layer of defense that can prevent this type of compromise."]}, {"id": "github_repository_non_linear_history", "title": "Default Branch Should Require Linear History", "priority": "MEDIUM", "details": "Prevent merge commits from being pushed to protected branches.", "recommendation": "Note: The remediation steps apply to legacy branch protections, rules set-based protection should be updated from the rules set page\n1. Make sure you have admin permissions\n2. Go to the repo's settings page\n3. Enter 'Branches' tab\n4. Under 'Branch protection rules'\n5. Click 'Edit' on the default branch rule\n6. Check 'Require linear history'\n7. Click 'Save changes'", "category": "Best practices", "disabled": false, "scm": "github", "entity": "repository", "source": "branch_protection_rules", "threat": ["Having a non-linear history makes it harder to reverse changes, making recovery from bugs and security risks slower and more difficult."]}, {"id": "github_repository_pushes_are_not_restricted", "title": "Default Branch Should Restrict Who Can Push To It", "priority": "LOW", "details": "By default, commits can be pushed directly to protected branches without going through a Pull Request. Restrict who can push commits to protected branches so that commits can be added only via merges, which require Pull Request.", "recommendation": "Note: The remediation steps apply to legacy branch protections, rules set-based protection should be updated from the rules set page\n1. Make sure you have admin permissions\n2. Go to the repo's settings page\n3. Enter 'Branches' tab\n4. Under 'Branch protection rules'\n5. Click 'Edit' on the default branch rule\n6. Check 'Restrict who can push to matching branches'\n7. Choose who should be allowed to push\n8. Click 'Save changes'", "category": "Best practices", "disabled": false, "scm": "github", "entity": "repository", "source": "branch_protection_rules", "threat": ["An attacker with write credentials may introduce vulnerabilities to your code without your knowledge. Alternatively, contributors may commit unsafe code that is buggy or easy to exploit that could have been caught using a review process."]}, {"id": "github_repository_repository_has_too_many_admins", "title": "Repository Should Have Fewer Than Three Admins", "priority": "LOW", "details": "Repository admins are highly privileged and could create great damage if they are compromised. It is recommended to limit the number of Repository Admins to the minimum required (recommended maximum 3 admins).", "recommendation": "1. Make sure you have admin permissions\n2. Go to the repository settings page\n3. Press 'Collaborators and teams'\n4. Select the unwanted admin users\n5. Select 'Change Role'", "category": "Best practices", "disabled": false, "scm": "github", "entity": "repository", "source": "repository_access_control", "threat": ["A compromised user with admin permissions can initiate a supply chain attack in a plethora of ways.", "Having many admin users increases the overall risk of user compromise, and makes it more likely to lose track of unused admin permissions given to users in the past."]}, {"id": "github_repository_repository_not_maintained", "title": "Repository Should Be Updated At Least Quarterly", "priority": "MEDIUM", "details": "A project which is not actively maintained may not be patched against security issues within its code and dependencies, and is therefore at higher risk of including known vulnerabilities.", "recommendation": "1. Make sure you have admin permissions\n2. Either Delete or Archive the repository", "category": "Best practices", "disabled": false, "scm": "github", "entity": "repository", "source": "repository_activity", "threat": ["As new vulnerabilities are found over time, unmaintained repositories are more likely to point to dependencies that have known vulnerabilities, exposing these repositories to 1-day attacks."]}, {"id": "github_repository_repository_secret_is_stale", "title": "Repository Secrets Should Be Updated At Least Yearly", "priority": "MEDIUM", "details": "Some of the repository secrets have not been updated for over a year. It is recommended to refresh secret values regularly in order to minimize the risk of breach in case of an information leak.", "recommendation": "1. Enter your repository's landing page\n2. Go to the settings tab\n3. Under the 'Security' title on the left, choose 'Secrets and variables'\n4. Click 'Actions'\n5. Sort secrets by 'Last Updated'\n6. Regenerate every secret older than one year and add the new value to GitHub's secret manager", "category": "Best practices", "disabled": false, "scm": "github", "entity": "repository", "source": "secrets_management", "threat": ["Sensitive data may have been inadvertently made public in the past, and an attacker who holds this data may gain access to your current CI and services. In addition, there may be old or unnecessary tokens that have not been inspected and can be used to access sensitive information."]}, {"id": "github_repository_repository_webhook_doesnt_require_ssl", "title": "Webhooks Should Be Configured To Use SSL", "priority": "LOW", "details": "Webhooks that are not configured with SSL enabled could expose your software to man-in-the-middle attacks (MITM).", "recommendation": "1. Make sure you can manage webhooks for the repository\n2. Go to the repository settings page\n3. Select 'Webhooks'\n4. Verify URL starts with https\n5. Press on the insecure webhook\n6. Enable 'SSL verification'\n7. Click 'Update webhook'", "category": "Best practices", "disabled": false, "scm": "github", "entity": "repository", "source": "webhooks_configuration", "threat": ["If SSL verification is disabled, any party with access to the target DNS domain can masquerade as your designated payload URL, allowing it to freely read and affect the response of any webhook request.", "In the case of GitHub Enterprise Server instances, it may be sufficient only to control the DNS configuration of the network where the instance is deployed, as an attacker can redirect traffic to the target domain in your internal network directly to them, and this is often much easier than compromising an internet-facing domain."]}, {"id": "github_repository_repository_webhook_no_secret", "title": "Webhooks Should Be Configured With A Secret", "priority": "LOW", "details": "Webhooks are not configured with a shared secret to validate the origin and content of the request. This could allow your webhook to be triggered by any bad actor with the URL.", "recommendation": "1. Make sure you can manage webhooks for the repository\n2. Go to the repository settings page\n3. Select 'Webhooks'\n4. Press on the insecure webhook\n5. Configure a secret\n6. Click 'Update webhook'", "category": "Best practices", "disabled": false, "scm": "github", "entity": "repository", "source": "webhooks_configuration", "threat": ["Not using a webhook secret makes the service receiving the webhook unable to determine the authenticity of the request.", "This allows attackers to masquerade as your repository, potentially creating an unstable or insecure state in other systems."]}, {"id": "github_repository_requires_branches_up_to_date_before_merge", "title": "Default Branch Should Require Branches To Be Up To Date Before Merge", "priority": "MEDIUM", "details": "Status checks are required, but branches that are not up to date can be merged. This can result in previously remediated issues being merged in over fixes.", "recommendation": "Note: The remediation steps apply to legacy branch protections, rules set-based protection should be updated from the rules set page\n1. Make sure you have admin permissions\n2. Go to the repo's settings page\n3. Enter 'Branches' tab\n4. Under 'Branch protection rules'\n5. Click 'Edit' on the default branch rule\n6. Check 'Require status checks to pass before merging'\n7. Check 'Require branches to be up to date before merging'\n8. Click 'Save changes'", "category": "Best practices", "disabled": false, "scm": "github", "entity": "repository", "source": "branch_protection_rules", "threat": ["Required status checks may be failing on the latest version after passing on an earlier version of the code, making it easy to commit buggy or otherwise insecure code."]}, {"id": "github_repository_requires_status_checks", "title": "Default Branch Should Require All Checks To Pass Before Merge", "priority": "MEDIUM", "details": "Branch protection is enabled. However, the checks that validate the quality and security of the code are not required to pass before submitting new changes. The default check ensures the code is up-to-date to prevent faulty merges and unexpected behaviors, as well as other custom checks that test security and quality. It is advised to turn this control on to ensure any existing or future check will be required to pass.", "recommendation": "Note: The remediation steps apply to legacy branch protections, rules set-based protection should be updated from the rules set page\n1. Make sure you have admin permissions\n2. Go to the repo's settings page\n3. Enter 'Branches' tab\n4. Under 'Branch protection rules'\n5. Click 'Edit' on the default branch rule\n6. Check 'Require status checks to pass before merging'\n7. Add the required checks that must pass before merging (tests, lint, etc...)\n8. Click 'Save changes'", "category": "Best practices", "disabled": false, "scm": "github", "entity": "repository", "source": "branch_protection_rules", "threat": ["Not defining a set of required status checks can make it easy for contributors to introduce buggy or insecure code as manual review, whether mandated or optional, is the only line of defense."]}, {"id": "github_repository_review_dismissal_allowed", "title": "Default Branch Should Restrict Who Can Dismiss Reviews", "priority": "LOW", "details": "Any user with write access to the repository can dismiss pull-request reviews. Pull-request review contains essential information on the work that needs to be done and helps keep track of the changes. Dismissing it might cause a loss of this information and should be restricted to a limited number of users.", "recommendation": "Note: The remediation steps apply to legacy branch protections, rules set-based protection should be updated from the rules set page\n1. Make sure you have admin permissions\n2. Go to the repo's settings page\n3. Enter 'Branches' tab\n4. Under 'Branch protection rules'\n5. Click 'Edit' on the default branch rule\n6. Check 'Restrict who can dismiss pull request reviews'\n7. Click 'Save changes'", "category": "Best practices", "disabled": false, "scm": "github", "entity": "repository", "source": "branch_protection_rules", "threat": ["Allowing the dismissal of reviews can promote poor and vulnerable code, as important comments may be forgotten and ignored during the review process."]}, {"id": "github_repository_token_default_permissions_is_read_write", "title": "Default Workflow Token Permission Should Be Set To Read Only", "priority": "MEDIUM", "details": "The default GitHub Action workflow token permission is set to read-write. When creating workflow tokens, it is highly recommended to follow the Principle of Least Privilege and force workflow authors to specify explicitly which permissions they need.", "recommendation": "1. Make sure you have admin permissions\n2. Go to the org's settings page\n3. Enter 'Actions - General' tab\n4. Under 'Workflow permissions'\n5. Select 'Read repository contents permission'\n6. Click 'Save'", "category": "Best practices", "disabled": false, "scm": "github", "entity": "repository", "source": "workflow_permissions", "threat": ["In case of token compromise (due to a vulnerability or malicious third-party GitHub actions), an attacker can use this token to sabotage various assets in your CI/CD pipeline, such as packages, pull-requests, deployments, and more."]}, {"id": "github_repository_users_allowed_to_bypass_ruleset", "title": "Repository Rulesets Missing or Improperly Configured", "priority": "MEDIUM", "details": "Either rulesets are not configured for this repository, or existing rulesets have bypass configurations that could allow users to circumvent security controls. Rulesets provide centralized protection against code quality and security issues, and bypass configurations should be minimized to prevent unauthorized circumvention of these protections.", "recommendation": "1. Go to the repository settings page\n2. Under 'Code and automation', select 'Rules -> Rulesets'\n5. Press 'Save Changes' or 'Create ruleset'", "category": "Best practices", "disabled": false, "scm": "github", "entity": "repository", "source": "ruleset", "threat": ["Missing or improperly configured rulesets allow attackers to bypass security controls and introduce malicious code, or developers to accidentally bypass important quality and security checks."]}, {"id": "github_runner_group_runner_group_can_be_used_by_public_repositories", "title": "Runner Group Should Be Limited to Private Repositories", "priority": "HIGH", "details": "Workflows from public repositories are allowed to run on GitHub Hosted Runners.\nWhen using GitHub Hosted Runners,\nit is recommended to allow only workflows from private repositories to run on these runners.\nto avoid being vulnerable to malicious actors using workflows from public repositories to break into your private network.\nIn case of inadequate security measures implemented on the hosted runner,\nmalicious actors could fork your repository and then create a pwn-request (a pull-request from a forked repository to the base repository with malicious intentions)\nthat create a workflow that exploits these vulnerabilities and move laterally inside your network.\n", "recommendation": "1. Go to the organization settings page\n2. Press Actions ➝ Runner groups\n3. Select the violating repository\n4. Uncheck Allow public repositories", "category": "Best practices", "disabled": false, "scm": "github", "entity": "runner_group", "source": "runner_groups", "threat": ["Hosted runners are usually part of the organization's private network and can be easily misconfigured.", "1. Create a workflow that runs on the public hosted runner", "2. Exploit the misconfigurations to execute code inside the private network"]}, {"id": "github_runner_group_runner_group_not_limited_to_selected_repositories", "title": "Runner Group Should Be Limited to Selected Repositories", "priority": "MEDIUM", "details": "Not limiting the runner group to selected repositories allows any user in the organization to execute workflows on the group's runners.\nIn case of inadequate security measures implemented on the hosted runner,\nmalicious insider could create a repository with a workflow that exploits the runner's vulnerabilities to move laterally inside your network.\n", "recommendation": "1. Go to the organization settings page\n2. Go to Actions ➝ Runner groups\n3. Under the 'Repository Access' section, select 'Selected repositories'\n4. Select the required repositories", "category": "Best practices", "disabled": false, "scm": "github", "entity": "runner_group", "source": "runner_groups", "threat": ["Hosted runners are usually part of the organization's private network and can be easily misconfigured.", "1. Create a workflow that runs on the hosted runner", "2. Exploit the runner misconfigurations/known CVE's to execute code inside the private network"]}, {"id": "gitlab_group_collaborators_can_fork_repositories_to_external_namespaces", "title": "Forking of Repositories to External Namespaces Should Be Disabled.", "priority": "MEDIUM", "details": "The ability to fork a project to external namespaces is turned on. Forking a repository can lead to loss of control and potential exposure of source code. If you do not need forking, it is recommended to turn it off in the project's configuration. The option to fork should be enabled only by owners deliberately when opting to create a fork.", "recommendation": "1. Go to the top-level groups Settings > General page\n2. Expand the Permissions and group features section\n3. Check 'Prevent project forking outside current group'\n4. Select 'Save changes'", "category": "Best practices", "disabled": false, "scm": "gitlab", "entity": "group", "source": "repository_visibility", "threat": ["Forking to external namespaces could result in loss of control over proprietary information and potentially expose the organization to security risks, such as data leaks."]}, {"id": "gitlab_group_group_allows_excessive_mfa_grace_period", "title": "Two-Factor Authentication Grace Period Should Not Be Longer Than One Week", "priority": "MEDIUM", "details": "New members added to your group are allowed longer than a week to enable MFA. The time frame should be lowered to one week or less.", "recommendation": "1. Go to the group page\n2. Press Settings -> General\n3. Expand 'Permissions and group features'\n4. In the box titled: 'Delay 2FA enforcement (hours)', enter a number under 168 (preferably 0)\n5. Press 'Save Changes'", "category": "Best practices", "disabled": false, "scm": "gitlab", "entity": "group", "source": "account_access_control", "threat": ["Any new group member effectively acts as an attack surface until two-factor authentication is enabled. The risk is compounded as new members may be more vulnerable to phishing and identity theft attacks."]}, {"id": "gitlab_group_group_does_not_enforce_branch_protection_by_default", "title": "Group Should Enforce Branch Protection", "priority": "MEDIUM", "details": "The default branch should be protected in each group so that any new repository will be created with a protected default branch by default. In fully protected level, developers cannot push new commits, and no one can force push or delete the branch. Protecting branches ensures new code changes must go through a controlled merge process and it allows enforcement of code review and other security tests.", "recommendation": "1. Go to the group page\n2. Press Settings -> Repository\n3. Expand 'Default Branch' section\n4. Toggle the required protection rule\n5. Press 'Save Changes'", "category": "Best practices", "disabled": false, "scm": "gitlab", "entity": "group", "source": "branch_protection_rules", "threat": ["A developer creates a repository without any branch protection rules", "An attacker that gains access to the repository can modify its main branch without any restrictions"]}, {"id": "gitlab_group_organization_webhook_doesnt_require_ssl", "title": "Webhooks Should Be Configured To Use SSL", "priority": "LOW", "details": "Webhooks that are not configured with SSL enabled could expose your software to man-in-the-middle attacks (MITM).", "recommendation": "1. Go to the group Settings -> Webhooks page\n2. Find the misconfigured webhook and press 'Edit'\n3. Toggle 'Enable SSL verification'\n4. Press 'Save Changes'", "category": "Best practices", "disabled": false, "scm": "gitlab", "entity": "group", "source": "workflow_permissions", "threat": ["Webhooks with SSL verification disabled can be exploited by any party with access to the target DNS domain, allowing them to masquerade as your designated payload URL and freely read and affect the response of any webhook request.", "In the case of GitLab Self-Managed, it may be sufficient only to control the DNS configuration of the network where the instance is deployed."]}, {"id": "gitlab_group_two_factor_authentication_not_required_for_group", "title": "Two-Factor Authentication Should Be Enforced For The Group", "priority": "HIGH", "details": "The two-factor authentication requirement is not enabled at the group level. Regardless of whether users are managed externally by SSO, it is highly recommended to enable this option, to reduce the risk of a deliberate or accidental user creation without MFA.", "recommendation": "1. Go to the group page\n2. Press Settings -> General\n3. Expand 'Permissions and group features'\n4. Toggle 'Require all users in this group to set up two-factor authentication'\n5. Press 'Save Changes'", "category": "Best practices", "disabled": false, "scm": "gitlab", "entity": "group", "source": "account_access_control", "threat": ["If an attacker gets valid credentials for one of the organization’s users, they can authenticate to your GitHub organization."]}, {"id": "gitlab_project_code_review_by_two_members_not_required", "title": "Default Branch Should Require Code Review By At Least Two Reviewers", "priority": "MEDIUM", "details": "In order to comply with separation of duties principle and enforce secure code practices, a code review should be mandatory using the source-code-management built-in enforcement.", "recommendation": "1. Make sure you have admin permissions\n2. Go to the repo's settings page\n3. Enter 'Merge Requests' tab\n4. Under 'Merge request approvals', Click 'Add approval rule' on the default branch rule\n5. Select 'Approvals required' and enter at least 2 approvers\n6. Select 'Add approvers' and select the desired members\n7. Click 'Add approval rule'", "category": "Best practices", "disabled": false, "scm": "gitlab", "entity": "project", "source": "branch_protection_rules", "threat": ["Users can merge code without being reviewed which can lead to insecure code reaching the main branch and production."]}, {"id": "gitlab_project_code_review_not_required", "title": "Default Branch Should Require Code Review", "priority": "HIGH", "details": "In order to comply with separation of duties principle and enforce secure code practices, a code review should be mandatory using the source-code-management built-in enforcement.", "recommendation": "1. Make sure you have admin permissions\n2. Go to the repo's settings page\n3. Enter 'Merge Requests' tab\n4. Under 'Merge request approvals', Click 'Add approval rule' on the default branch rule\n5. Select 'Approvals required' and enter at least 1 approvers\n6. Select 'Add approvers' and select the desired members\n7. Click 'Add approval rule'", "category": "Best practices", "disabled": false, "scm": "gitlab", "entity": "project", "source": "branch_protection_rules", "threat": ["Users can merge code without being reviewed which can lead to insecure code reaching the main branch and production."]}, {"id": "gitlab_project_forking_allowed_for_repository", "title": "Forking Should Not Be Allowed for Private/Internal Projects", "priority": "LOW", "details": "Forking a project (repository) can lead to loss of control and potential exposure of source code. If you do not need forking, it is recommended to turn it off in the project or group configuration. The option to fork should be enabled only by owners deliberately when opting to create a fork.", "recommendation": "1. Make sure you have owner permissions\n2. Go to the project's settings page\n3. Enter 'General' tab\n4. Under 'Visibility, project features, permissions', Toggle off 'Forks'", "category": "Best practices", "disabled": false, "scm": "gitlab", "entity": "project", "source": "repository_visibility", "threat": ["Forked repositories may leak important code assets or sensitive secrets embedded in the code to anyone outside your organization, as the code becomes publicly accessible."]}, {"id": "gitlab_project_missing_default_branch_protection", "title": "Default Branch Should Be Protected", "priority": "MEDIUM", "details": "Branch protection is not enabled for this repository’s default branch. Protecting branches ensures new code changes must go through a controlled merge process and allows enforcement of code review as well as other security tests. This issue is raised if the default branch protection is turned off.", "recommendation": "1. Make sure you have owner permissions\n2. Go to the project's settings -> Repository page\n3. Enter 'Protected branches' tab\n4. Select the default branch\n5. Set the allowed to merge to 'maintainers' and the allowed to push to 'No one'", "category": "Best practices", "disabled": false, "scm": "gitlab", "entity": "project", "source": "branch_protection_rules", "threat": ["Any contributor with write access may push potentially dangerous code to this repository, making it easier to compromise and difficult to audit."]}, {"id": "gitlab_project_missing_default_branch_protection_force_push", "title": "Default Branch Should Not Allow Force Pushes", "priority": "MEDIUM", "details": "The history of the default branch is not protected against changes for this repository. Protecting branch history ensures every change that was made to code can be retained and later examined. This issue is raised if the default branch history can be modified using force push.", "recommendation": "1. Make sure you have owner permissions\n2. Go to the project's settings -> Repository page\n3. Enter 'Protected branches' tab\n4. Select the default branch\n5. Set the allowed to merge to 'maintainers' and the allowed to push to 'No one'", "category": "Best practices", "disabled": false, "scm": "gitlab", "entity": "project", "source": "branch_protection_rules", "threat": ["Rewriting project history can make it difficult to trace back when bugs or security issues were introduced, making them more difficult to remediate."]}, {"id": "gitlab_project_no_conversation_resolution", "title": "Project Should Require All Conversations To Be Resolved Before Merge", "priority": "LOW", "details": "Require all merge request conversations to be resolved before merging. Check this to avoid bypassing/missing a Pull Request comment.", "recommendation": "1. Make sure you can manage project merge requests permissions\n2. Go to the project's settings page\n3. Select 'Merge Requests'\n4. Press on the 'All threads must be resolved'\n5. Click 'Save changes'", "category": "Best practices", "disabled": false, "scm": "gitlab", "entity": "project", "source": "merge_requests_configuration", "threat": ["Allowing the merging of code without resolving all conversations can promote poor and vulnerable code, as important comments may be forgotten or deliberately ignored when the code is merged."]}, {"id": "gitlab_project_no_signed_commits", "title": "Default Branch Should Require All Commits To Be Signed", "priority": "LOW", "details": "Require all commits to be signed and verified", "recommendation": "1. Make sure you have owner permissions\n2. Go to the project's settings -> Repository page\n3. Enter 'Push Rules' tab\n4. Set the 'Reject unsigned commits' checkbox", "category": "Best practices", "disabled": false, "scm": "gitlab", "entity": "project", "source": "branch_protection_rules", "threat": ["A commit containing malicious code may be crafted by a malicious actor that has acquired write access to the repository to initiate a supply chain attack. Commit signing provides another layer of defense that can prevent this type of compromise."]}, {"id": "gitlab_project_project_has_too_many_admins", "title": "Project Should Have Fewer Than Three Owners", "priority": "LOW", "details": "Projects owners are highly privileged and could create great damage if they are compromised. It is recommended to limit the number of Project Owners to the minimum required (recommended maximum 3 admins).", "recommendation": "1. Make sure you have owner permissions\n2. Go to the Project Information -> Members page\n3. Select the unwanted owner users and remove the selected owners", "category": "Best practices", "disabled": false, "scm": "gitlab", "entity": "project", "source": "repository_access_control", "threat": ["A compromised user with owner permissions can initiate a supply chain attack in a plethora of ways.", "Having many admin users increases the overall risk of user compromise, and makes it more likely to lose track of unused admin permissions given to users in the past."]}, {"id": "gitlab_project_project_not_maintained", "title": "Project Should Be Updated At Least Quarterly", "priority": "MEDIUM", "details": "A project which is not actively maintained may not be patched against security issues within its code and dependencies, and is therefore at higher risk of including known vulnerabilities.", "recommendation": "1. Make sure you have admin permissions\n2. Either Delete or Archive the project", "category": "Best practices", "disabled": false, "scm": "gitlab", "entity": "project", "source": "repository_activity", "threat": ["As new vulnerabilities are found over time, unmaintained repositories are more likely to point to dependencies that have known vulnerabilities, exposing these repositories to 1-day attacks."]}, {"id": "gitlab_project_project_webhook_doesnt_require_ssl", "title": "Webhook Configured Without SSL Verification", "priority": "LOW", "details": "Webhooks that are not configured with SSL verification enabled could expose your software to man-in-the-middle attacks (MITM).", "recommendation": "1. Make sure you can manage webhooks for the project\n2. Go to the project's settings page\n3. Select 'Webhooks'\n4. Press on the 'Enable SSL verification'\n5. Click 'Save changes'", "category": "Best practices", "disabled": false, "scm": "gitlab", "entity": "project", "source": "webhooks_configuration", "threat": ["If SSL verification is disabled, any party with access to the target DNS domain can masquerade as your designated payload URL, allowing it to freely read and affect the response of any webhook request.", "In the case of GitLab Self-Managed, it may be sufficient only to control the DNS configuration of the network where the instance is deployed, as an attacker can redirect traffic to the target domain in your internal network directly to them, and this is often much easier than compromising an internet-facing domain."]}, {"id": "gitlab_project_repository_allows_committer_approvals_policy", "title": "Repository Should Not Allow Committer Approvals", "priority": "LOW", "details": "The repository allows merge request contributors (that aren't the merge request author), to approve the merge request. To ensure merge request review is done objectively, it is recommended to toggle this option off.", "recommendation": "1. Make sure you have admin permissions\n2. Go to the repo's settings page\n3. Enter 'Merge Requests' tab\n4. Under 'Approval settings', Check 'Prevent approvals by users who add commits'\n5. Click 'Save Changes'", "category": "Best practices", "disabled": false, "scm": "gitlab", "entity": "project", "source": "merge_requests_configuration", "threat": ["Users can merge code without being reviewed which can lead to insecure code reaching the main branch and production."]}, {"id": "gitlab_project_repository_allows_overriding_approvers", "title": "Merge Request Authors Should Not Be Able To Override the Approvers List", "priority": "MEDIUM", "details": "A repository should not allow merge request authors to freely edit the list of required approvers. To enforce code review only by authorized personnel, the option to override the list of valid approvers for the merge request must be toggled off.", "recommendation": "1. Make sure you have admin permissions\n2. Go to the repo's settings page\n3. Enter 'Merge Requests' tab\n4. Under 'Approval settings', Check 'Prevent editing approval rules in merge requests'\n5. Click 'Save Changes'", "category": "Best practices", "disabled": false, "scm": "gitlab", "entity": "project", "source": "merge_requests_configuration", "threat": ["Users can merge code without being reviewed which can lead to insecure code reaching the main branch and production."]}, {"id": "gitlab_project_repository_allows_review_requester_to_approve_their_own_request", "title": "Repository Should Not Allow Review Requester To Approve Their Own Request", "priority": "MEDIUM", "details": "To comply with separation of duties and enforce secure code practices, the repository should prohibit pull request owners from approving their own changes.", "recommendation": "1. Make sure you have admin permissions\n2. Go to the repo's settings page\n3. Enter 'Merge Requests' tab\n4. Under 'Approval settings', Check 'Prevent approval by author'\n5. Click 'Save Changes'", "category": "Best practices", "disabled": false, "scm": "gitlab", "entity": "project", "source": "merge_requests_configuration", "threat": ["Users can merge code without being reviewed which can lead to insecure code reaching the main branch and production."]}, {"id": "gitlab_project_repository_dismiss_stale_reviews", "title": "Default Branch Should Require New Code Changes After Approval To Be Re-Approved", "priority": "LOW", "details": "This security control prevents merging code that was approved but later on changed. Turning it on ensures new changes are required to be reviewed again. This setting is part of the Merge request approval settings, and hardens the code-review process. If turned off - a developer can change the code after approval, and push code that is different from the one that was previously allowed.", "recommendation": "1. Make sure you have admin permissions\n2. Go to the repo's settings page\n3. Enter 'Merge Requests' tab\n4. Under 'Approval settings', Check 'Remove all approvals'\n5. Click 'Save Changes'", "category": "Best practices", "disabled": false, "scm": "gitlab", "entity": "project", "source": "branch_protection_rules", "threat": ["Buggy or insecure code may be committed after approval and will reach the main branch without review. Alternatively, an attacker can attempt a just-in-time attack to introduce dangerous code just before merge."]}, {"id": "gitlab_project_repository_require_code_owner_reviews_policy", "title": "Default Branch Should Limit Code Review to Code-Owners", "priority": "LOW", "details": "It is recommended to require code review only from designated individuals specified in CODEOWNERS file. Turning this option on enforces that only the allowed owners can approve a code change. This option is found in the branch protection setting of the project.", "recommendation": "1. Make sure you have owner permissions\n2. Go to the project's settings -> Repository page\n3. Enter 'Protected branches' tab\n4. Select the default branch\n5. Check the 'Code owner approval'", "category": "Best practices", "disabled": false, "scm": "gitlab", "entity": "project", "source": "branch_protection_rules", "threat": ["A pull request may be approved by any contributor with write access. Specifying specific code owners can ensure review is only done by individuals with the correct expertise required for the review of the changed files, potentially preventing bugs and security risks."]}, {"id": "gitlab_project_requires_status_checks", "title": "Project Should Require All Pipelines to Succeed", "priority": "MEDIUM", "details": "Checks that validate the quality and security of the code are not required to pass before submitting new changes. It is advised to turn this flag on to ensure any existing or future check will be required to pass.", "recommendation": "1. Make sure you can manage project merge requests permissions\n2. Go to the project's settings page\n3. Select 'Merge Requests'\n4. Press on the 'Pipelines must succeed'\n5. Click 'Save changes'", "category": "Best practices", "disabled": false, "scm": "gitlab", "entity": "project", "source": "merge_requests_configuration", "threat": ["Not defining a set of required status checks can make it easy for contributors to introduce buggy or insecure code as manual review, whether mandated or optional, is the only line of defense."]}, {"id": "github_repository_repository_visibility_changed_from_private_to_public", "title": "Repository Visibility Changed from Private to Public", "priority": "HIGH", "details": "A change in the visibility of your code repository has been detected. The repository visibility was previously set as private but has now been changed to public. This change may expose sensitive code and data to unauthorized access and increase the risk of security breaches.", "recommendation": "Take immediate action to review the repository's visibility settings thoroughly. Assess whether the change from private to public was accidental, and promptly revert the setting if necessary to protect sensitive code and data.\nTo change the repository visibility:\n1. Make sure you have admin permissions\n2. Go to the repo's settings page\n3. In the \"General\" tab, scroll down to the \"Danger Zone\" section\n4. Click \"Change Visibility\"\n5. Click \"Change to private\"", "category": "Best practices", "disabled": false, "scm": "github", "entity": "repository", "source": "repository_visibility", "threat": []}, {"id": "github_repository_repository_gitignore_file_is_missing", "title": "Git Ignore File (.gitignore) Missing in Repository", "priority": "HIGH", "details": "A missing .gitignore file in the root directory of your code repository has been detected. The absence of this file can lead to unintended tracking and the inclusion of sensitive or unnecessary files in your version control system. It's crucial to have a .gitignore file in the root directory to exclude files and directories that shouldn't be part of the repository.", "recommendation": "1. Take immediate action by creating a .gitignore file in the root directory of your repository.\n2. Ensure it includes rules to ignore sensitive credentials, build artifacts, temporary files, and OS-specific files.\n3. Regularly review and update this file to cover all relevant files and directories.", "category": "Best practices", "disabled": false, "scm": "github", "entity": "repository", "source": ".gitignore", "threat": ["The absence of a .gitignore file in the root directory can lead to the following:", "Unintended exposure of sensitive information such as API keys, passwords, and private data.", "Increased risk of data breaches due to exposed sensitive files.", "A cluttered repository with unnecessary files makes managing and navigating the codebase harder.", "Potential performance issues are due to the inclusion of large binary files or building artifacts."]}, {"id": "gitlab_project_repository_visibility_changed_from_private_to_public", "title": "Project Visibility Changed from Private to Public", "priority": "HIGH", "details": "A change in the visibility of your code repository has been detected. The repository visibility was previously set as private but has now been changed to public. This change may expose sensitive code and data to unauthorized access and increase the risk of security breaches.", "recommendation": "Take immediate action to review the repository's visibility settings thoroughly. Assess whether the change from private to public was accidental, and promptly revert the setting if necessary to protect sensitive code and data.\nTo change the repository visibility:\n1. Make sure you have admin permissions\n2. Go to the repo’s settings page\n3. Enter the \"General\" tab\n4. Scroll down to the \"Visibility, project features, permissions\" section\n5. Click \"expand\"\n6. Change the \"Project visibility\" to \"internal\" or \"private\"", "category": "Best practices", "disabled": false, "scm": "gitlab", "entity": "project", "source": "repository_visibility", "threat": []}, {"id": "gitlab_project_repository_gitignore_file_is_missing", "title": "Git Ignore File (.gitignore) Missing in Repository", "priority": "HIGH", "details": "A missing .gitignore file in the root directory of your code repository has been detected. The absence of this file can lead to unintended tracking and the inclusion of sensitive or unnecessary files in your version control system. It's crucial to have a .gitignore file in the root directory to exclude files and directories that shouldn't be part of the repository.", "recommendation": "1. Take immediate action by creating a .gitignore file in the root directory of your repository.\n2. Ensure it includes rules to ignore sensitive credentials, build artifacts, temporary files, and OS-specific files.\n3. Regularly review and update this file to cover all relevant files and directories.", "category": "Best practices", "disabled": false, "scm": "gitlab", "entity": "project", "source": ".gitignore", "threat": ["The absence of a .gitignore file in the root directory can lead to the following:", "Unintended exposure of sensitive information such as API keys, passwords, and private data.", "Increased risk of data breaches due to exposed sensitive files.", "A cluttered repository with unnecessary files makes managing and navigating the codebase harder.", "Potential performance issues are due to the inclusion of large binary files or building artifacts."]}]</script>
+    <script>
+      function readData(){
+        try { return JSON.parse(document.getElementById('records-json').textContent); } catch(e){ return []; }
+      }
+      const DATA = readData();
+
+      const state = { search:'', sortKey:'priority', sortDir:'asc', prio:new Set() };
+      const table = document.getElementById('records-table');
+      const tbody = table.querySelector('tbody');
+      const search = document.getElementById('record-search');
+      const countEl = document.getElementById('record-count');
+      const filterHost = document.getElementById('record-filter-buttons');
+
+      function escapeHtml(s){
+        const str = String(s);
+        return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+      }
+      const prioRank = { 'HIGH':0, 'MEDIUM':1, 'LOW':2 };
+      function cmp(a,b){ return a<b?-1:a>b?1:0; }
+
+      function applyFilters(rows){
+        let out = rows;
+        const q = state.search.trim().toLowerCase();
+        if (q){
+          out = out.filter(r => (
+            String(r.id||'').toLowerCase().includes(q) ||
+            String(r.title||'').toLowerCase().includes(q) ||
+            String(r.category||'').toLowerCase().includes(q) ||
+            String(r.scm||'').toLowerCase().includes(q) ||
+            String(r.entity||'').toLowerCase().includes(q)
+          ));
+        }
+        if (state.prio.size){
+          out = out.filter(r => state.prio.has(String(r.priority||'').toUpperCase()));
+        }
+        return out;
+      }
+
+      function applySort(rows){
+        const key = state.sortKey; const dir = state.sortDir==='asc'?1:-1;
+        return [...rows].sort((a,b)=>{
+          let av=a[key], bv=b[key];
+          if (key==='priority'){ av = prioRank[String(av||'').toUpperCase()] ?? 99; bv = prioRank[String(bv||'').toUpperCase()] ?? 99; }
+          else if (key==='disabled'){ av = a.disabled===true?1:0; bv = b.disabled===true?1:0; }
+          else { av = String(av||'').toLowerCase(); bv = String(bv||'').toLowerCase(); }
+          return dir*cmp(av,bv);
+        });
+      }
+
+      function render(){
+        const filtered = applyFilters(DATA);
+        const sorted = applySort(filtered);
+        tbody.innerHTML = sorted.map(r => (
+          '<tr>'+
+          '<td>'+escapeHtml(r.id||'')+'</td>'+
+          '<td>'+escapeHtml(r.title||'')+'</td>'+
+          '<td>'+escapeHtml(r.priority||'')+'</td>'+
+          '<td>'+escapeHtml(r.category||'')+'</td>'+
+          '<td>'+escapeHtml(r.scm||'')+'</td>'+
+          '<td>'+escapeHtml(r.entity||'')+'</td>'+
+          '</tr>'
+        )).join('');
+        countEl.textContent = String(sorted.length)+' records';
+      }
+
+      // Sorting
+      table.querySelectorAll('thead th').forEach(th=>{
+        const key = th.getAttribute('data-sort');
+        if (!key) return;
+        th.addEventListener('click', ()=>{
+          if (state.sortKey===key) state.sortDir = state.sortDir==='asc'?'desc':'asc'; else { state.sortKey = key; state.sortDir='asc'; }
+          table.querySelectorAll('thead th').forEach(x=>x.setAttribute('data-dir', x===th?state.sortDir:''));
+          render();
+        });
+      });
+
+      // Search
+      let deb; search.addEventListener('input', ()=>{ clearTimeout(deb); deb=setTimeout(()=>{ state.search = search.value; render(); }, 120); });
+
+      // Filter chips
+      ['HIGH','MEDIUM','LOW'].forEach(p=>{
+        const btn = document.createElement('button');
+        btn.textContent = p;
+        btn.addEventListener('click', ()=>{ if (state.prio.has(p)) state.prio.delete(p); else state.prio.add(p); btn.classList.toggle('active'); render(); });
+        filterHost.appendChild(btn);
+      });
+
+      render();
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
