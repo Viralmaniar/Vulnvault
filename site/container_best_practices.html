@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Container Image Best Practices Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <style>:root {
+    color-scheme: light dark;
+    --bg: #0e1117;
+    --card-bg: #151b26;
+    --accent: #4cc9f0;
+    --accent-2: #ffb703;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --font-body: "Aptos", "Inter", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    --color-surface: rgba(9, 16, 34, 0.78);
+    --color-surface-alt: rgba(13, 23, 47, 0.68);
+    --color-surface-soft: rgba(12, 21, 45, 0.6);
+    --color-border: rgba(123, 139, 170, 0.2);
+    --color-text: #eef1fa;
+    --color-muted: rgba(150, 166, 199, 0.85);
+    --color-primary: #8caeff;
+    --color-accent: #4fd6c8;
+    font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+body {
+    margin: 0;
+    padding: 1.2rem;
+    background: #05070d;
+    color: var(--text);
+    font-size: 0.875rem;
+    line-height: 1.4;
+}
+body.is-page {
+    font-family: var(--font-body);
+    letter-spacing: -0.01em;
+    min-height: 100vh;
+}
+body.is-page::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(135deg, #050b1d 0%, #081b3d 50%, #0c224a 100%);
+    z-index: -1;
+}
+h1, h2, h3 {
+    margin: 0 0 0.6rem 0;
+    font-weight: 600;
+}
+h1 {
+    font-size: 1.6rem;
+    letter-spacing: 0.01em;
+}
+h2 {
+    font-size: 1rem;
+}
+a { color: var(--accent); }
+.layout {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    column-gap: 1rem;
+    row-gap: 1px;
+}
+@media (max-width: 1200px) { .layout { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 800px) { .layout { grid-template-columns: repeat(1, minmax(0, 1fr)); } }
+.card {
+    background: var(--card-bg);
+    border-radius: 14px;
+    padding: 0.95rem;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.35);
+    margin-bottom: 1px;
+}
+.card.full-span { grid-column: 1 / -1; }
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 0.55rem;
+}
+.summary-card {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 12px;
+    padding: 0.55rem;
+}
+.summary-card h4 {
+    margin: 0;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+.summary-card p {
+    margin: 0.3rem 0 0 0;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+.highlights { padding-left: 1rem; }
+.highlights li { margin-bottom: 0.3rem; font-size: 0.82rem; }
+.bar-list { display: flex; flex-direction: column; gap: 0.45rem; }
+.bar-row { display: flex; flex-direction: column; gap: 0.2rem; }
+.bar-label { display: flex; justify-content: space-between; font-size: 0.78rem; }
+.bar-track { background: rgba(255,255,255,0.08); border-radius: 999px; overflow: hidden; }
+.bar-fill { height: 8px; border-radius: 999px; background: linear-gradient(90deg, var(--accent), var(--accent-2)); }
+.table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+.table thead { color: var(--muted); text-transform: uppercase; font-size: 0.68rem; }
+.table th, .table td { padding: 0.3rem 0.35rem; border-bottom: 1px solid rgba(255,255,255,0.08); vertical-align: top; color: var(--text); }
+.table tbody tr:hover { background: rgba(255,255,255,0.02); }
+.table-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+.table-controls input {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 999px;
+    padding: 0.4rem 0.8rem;
+    color: var(--text);
+    font-size: 0.8rem;
+}
+.filter-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+}
+.filter-buttons button {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 999px;
+    padding: 0.25rem 0.65rem;
+    color: var(--text);
+    font-size: 0.76rem;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+.filter-buttons button.active {
+    background: #4cc9f0;
+    border-color: #4cc9f0;
+    color: #0b1220;
+}
+.table-controls span {
+    color: var(--muted);
+    font-size: 0.76rem;
+    margin-left: auto;
+}
+.table-scroll {
+    max-height: 520px;
+    overflow: auto;
+}
+.meta-desc {
+    color: var(--muted);
+    font-size: 0.78rem;
+    margin-top: 0.2rem;
+}
+th[data-sort] {
+    cursor: pointer;
+    position: relative;
+}
+th[data-sort]::after {
+    content: attr(data-dir);
+    position: absolute;
+    right: 0.2rem;
+    font-size: 0.7rem;
+}
+.site-nav { background: var(--color-surface-soft); border: 1px solid var(--color-border); border-radius: 999px; padding: 1.2rem 1.3rem; box-shadow: 0 26px 52px rgba(1, 5, 21, 0.55); margin-bottom: 1.5rem; backdrop-filter: blur(18px); }
+.site-nav__inner { display: flex; align-items: center; justify-content: space-between; gap: 1.2rem; }
+.site-brand { display: inline-flex; align-items: center; gap: 0.6rem; font-weight: 700; font-size: 0.85rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-text) !important; text-decoration: none; }
+.site-brand__mark { width: 12px; height: 12px; border-radius: 999px; background: linear-gradient(135deg, #26de50, var(--color-accent)); box-shadow: 0 0 0 4px rgba(49, 85, 255, 0.16); display: inline-block; }
+.site-brand__text { color: inherit !important; line-height: 1; }
+.site-menu { display: flex; gap: 1.2rem; align-items: center; }
+.site-menu__link { font-size: 0.8rem; letter-spacing: 0.05em; text-transform: uppercase; font-weight: 600; text-decoration: none; color: var(--color-text) !important; transition: color 0.2s ease; }
+.site-menu__link:hover { color: var(--color-primary) !important; }
+.site-nav__actions { display: flex; align-items: center; gap: 0.6rem; }
+.site-menu__toggle { border: 1px solid var(--color-border); background: transparent; color: var(--color-text); width: 44px; height: 44px; border-radius: 14px; display: inline-flex; align-items: center; justify-content: center; }
+.site-menu__drawer { border-radius: 1.2rem; border: 1px solid var(--color-border); background: var(--color-surface); padding: 1rem; box-shadow: 0 26px 52px rgba(1, 5, 21, 0.55); backdrop-filter: blur(16px); margin-top: 0.75rem; }
+.site-footer { margin-top: 2rem; background: var(--color-surface); border-radius: 1.8rem; padding: 1.6rem; box-shadow: 0 36px 64px rgba(1, 5, 21, 0.6); border: 1px solid var(--color-border); backdrop-filter: blur(16px); text-align: center; }
+.site-footer__inner { display: flex; flex-direction: column; gap: 1rem; align-items: center; }
+.site-footer__copy { font-size: 0.8rem; color: var(--color-muted); margin: 0; }
+.site-footer__nav { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; }
+.site-footer__nav a,
+a.site-footer__nav { color: var(--color-muted); font-size: 0.78rem; letter-spacing: 0.05em; text-transform: uppercase; text-decoration: none; }
+.site-footer__nav a:hover,
+a.site-footer__nav:hover { color: var(--color-primary); }
+
+.view-btn {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 999px;
+  padding: 0.2rem 0.6rem;
+  color: var(--text);
+  font-size: 0.76rem;
+  cursor: pointer;
+}
+.view-btn:hover {
+  border-color: #4cc9f0;
+}
+.modal {
+  position: fixed;
+  inset: 0;
+  display: none;
+  background: rgba(0,0,0,0.6);
+  z-index: 9999;
+}
+.modal-content {
+  background: var(--card-bg);
+  margin: 10% auto;
+  padding: 1rem;
+  border: 1px solid var(--color-border);
+  width: min(860px, 92%);
+  border-radius: 12px;
+  box-shadow: 0 36px 64px rgba(1, 5, 21, 0.6);
+}
+.modal .close {
+  float: right;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--muted);
+}
+.modal .close:hover { color: var(--accent); }
+
+/* Modern record card styling */
+.record-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+.record-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+.record-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+.badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  border: 1px solid rgba(255,255,255,0.12);
+  color: var(--text);
+  background: rgba(255,255,255,0.04);
+}
+.badge.badge-high { background: linear-gradient(135deg, #fb8500, #ff006e); color: #0b1220; border-color: transparent; }
+.badge.badge-critical { background: linear-gradient(135deg, #ff006e, #b5179e); color: #0b1220; border-color: transparent; }
+.meta-row {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+.section {
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 12px;
+  background: rgba(255,255,255,0.02);
+  padding: 0.7rem;
+}
+.section-title {
+  font-size: 0.9rem;
+  color: var(--accent);
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+}
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem 1rem;
+}
+@media (max-width: 700px) { .card-grid { grid-template-columns: 1fr; } }
+.field {
+  display: flex;
+  flex-direction: column;
+}
+.field-label {
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+.field-value {
+  color: var(--text);
+  font-size: 0.85rem;
+}
+.chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+.chip {
+  background: rgba(255,255,255,0.08);
+  border-radius: 999px;
+  padding: 0.15rem 0.5rem;
+  font-size: 0.75rem;
+}
+.site-footer--social {
+  margin-top: 2rem;
+  background: rgba(12, 21, 45, 0.7);
+  border-radius: 1.8rem;
+  padding: 1.2rem;
+  box-shadow: 0 0 28px rgba(76, 201, 240, 0.25), 0 36px 64px rgba(1, 5, 21, 0.6);
+  border: 1px solid rgba(255,255,255,0.12);
+  backdrop-filter: blur(16px);
+}
+.social-bar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 0.6rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(9, 16, 34, 0.55);
+  box-shadow: 0 0 20px rgba(76, 201, 240, 0.18);
+}
+.social-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.18);
+  background: rgba(255,255,255,0.03);
+  color: var(--text, #eef1fa);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  text-decoration: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+.social-pill:hover {
+  border-color: var(--accent, #4cc9f0);
+  color: var(--accent, #4cc9f0);
+  box-shadow: 0 0 16px rgba(76, 201, 240, 0.35);
+  transform: translateY(-1px);
+}
+.social-pill__icon {
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.02);
+}
+.social-pill__icon svg {
+  width: 14px;
+  height: 14px;
+  display: block;
+  fill: currentColor;
+}
+.social-pill--accent {
+  background: linear-gradient(135deg, #ffd166, #ffb703);
+  color: #0b1220;
+  border-color: rgba(255,183,3,0.8);
+  box-shadow: 0 0 22px rgba(255,183,3,0.45);
+}
+.social-pill--accent:hover {
+  color: #0b1220;
+  border-color: #ffb703;
+  box-shadow: 0 0 28px rgba(255,183,3,0.6);
+}
+.social-pill--accent .social-pill__icon {
+  border-color: rgba(0,0,0,0.2);
+  background: rgba(255,255,255,0.25);
+}
+@media (max-width: 700px) {
+  .social-bar { border-radius: 1.4rem; }
+  .social-pill { width: 100%; justify-content: center; }
+}</style>
+</head>
+<body lang="en-US" class="is-page" data-theme="dark">
+    <div class="container my-auto">
+        <div class="site-nav">
+          <div class="site-nav__inner">
+            <a class="site-brand" href="vulnvault.html"><span class="site-brand__mark"></span><span class="site-brand__text">VulnVault</span></a>
+            <div class="site-menu">
+              <a class="site-menu__link" href="vulnvault.html">Home</a>
+              <a class="site-menu__link" href="sast.html">SAST</a>
+              <a class="site-menu__link" href="secret.html">Secrets</a>
+              <a class="site-menu__link" href="iac.html">IaC</a>
+              <a class="site-menu__link" href="License.html">License</a>
+              <a class="site-menu__link" href="container_secret.html">Container Secrets</a>
+              <a class="site-menu__link" href="container_best_practices.html">Container Best</a>
+              <a class="site-menu__link" href="vulnsamm.html">SAMM</a>
+              <a class="site-menu__link" href="scm_config.html">SCM</a>
+            </div>
+          </div>
+        </div>
+        <main class="page-shell shell">
+            <div class="layout">
+                <div class="card full-span">
+                    <h1>Container Image Best Practices Overview</h1>
+                    <p class="meta-desc">Generated: 2026-01-30 16:15:46</p>
+                    <div class="summary-grid" id="summary-cards">
+                        <div class="summary-card"><h4>Total Controls</h4><p>14</p></div>
+                        <div class="summary-card"><h4>Active Controls</h4><p>14</p></div>
+                        <div class="summary-card"><h4>Disabled</h4><p>0</p></div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h2>Key Insights</h2>
+                    <ul class="highlights"><li>14 active controls (100.0%).</li><li>High priority leads with 7 controls.</li><li>Top category: Best practices · 11 controls.</li><li>Top origin: Dockerfile · 9 controls.</li></ul>
+                </div>
+                <div class="card">
+                    <h2>Top Categories</h2>
+                    <div class="bar-list"><div class="bar-row"><div class="bar-label"><span>Best practices</span><span>11</span></div><div class="bar-track"><div class="bar-fill" style="width: 100%;"></div></div></div><div class="bar-row"><div class="bar-label"><span>Insecure configurations</span><span>3</span></div><div class="bar-track"><div class="bar-fill" style="width: 27%;"></div></div></div></div>
+                </div>
+                <div class="card">
+                    <h2>Top Origins</h2>
+                    <div class="bar-list"><div class="bar-row"><div class="bar-label"><span>Dockerfile</span><span>9</span></div><div class="bar-track"><div class="bar-fill" style="width: 100%;"></div></div></div><div class="bar-row"><div class="bar-label"><span>None</span><span>5</span></div><div class="bar-track"><div class="bar-fill" style="width: 56%;"></div></div></div></div>
+                </div>
+                <div class="card">
+                    <h2>Priority Distribution</h2>
+                    <div class="bar-list"><div class="bar-row"><div class="bar-label"><span>HIGH</span><span>7</span></div><div class="bar-track"><div class="bar-fill" style="width: 100%;"></div></div></div><div class="bar-row"><div class="bar-label"><span>LOW</span><span>4</span></div><div class="bar-track"><div class="bar-fill" style="width: 57%;"></div></div></div><div class="bar-row"><div class="bar-label"><span>MEDIUM</span><span>3</span></div><div class="bar-track"><div class="bar-fill" style="width: 43%;"></div></div></div></div>
+                </div>
+                <div class="card full-span">
+                    <h2>All Best Practice Controls</h2>
+                    <div class="table-controls">
+                      <input id="record-search" placeholder="Search title, category, origin" />
+                        <div class="filter-buttons" id="record-filter-buttons"></div>
+                        <span id="record-count"></span>
+                    </div>
+                  <div class="table-scroll">
+                    <table class="table" id="records-table">
+                      <thead>
+                        <tr>
+                          <th data-sort="title" data-dir="">Title</th>
+                          <th data-sort="priority" data-dir="">Priority</th>
+                          <th data-sort="category" data-dir="">Category</th>
+                          <th data-sort="origin" data-dir="">Origin</th>
+                          <th data-sort="disabled" data-dir="">Disabled</th>
+                        </tr>
+                      </thead>
+                      <tbody></tbody>
+                    </table>
+                  </div>
+                </div>
+            </div>
+        </main>
+        <footer class="site-footer site-footer--social">
+  <div class="social-bar">
+    <a class="social-pill" href="https://x.com/maniarviral" target="_blank" rel="noopener">
+      <span class="social-pill__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 4l7.5 8.5L4 20h3.2l5.7-6.5L19 20h1l-7.6-8.6L19.5 4h-3.2l-5 5.8L7.2 4z"/></svg></span>
+      <span>Follow me on X</span>
+    </a>
+    <a class="social-pill" href="https://au.linkedin.com/in/viralmaniar" target="_blank" rel="noopener">
+      <span class="social-pill__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4.98 3.5a2.5 2.5 0 110 5 2.5 2.5 0 010-5zM3 9h4v12H3zM9 9h3.8v1.6h.05c.53-1 1.82-2.06 3.75-2.06 4 0 4.75 2.6 4.75 6v6.46h-4V16.2c0-1.7-.03-3.9-2.37-3.9-2.38 0-2.74 1.86-2.74 3.78V21H9z"/></svg></span>
+      <span>Connect on LinkedIn</span>
+    </a>
+    <a class="social-pill" href="https://github.com/Viralmaniar" target="_blank" rel="noopener">
+      <span class="social-pill__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.58 2 12.24c0 4.52 2.87 8.35 6.84 9.7.5.1.68-.22.68-.48 0-.24-.01-.88-.01-1.73-2.78.62-3.37-1.36-3.37-1.36-.46-1.2-1.12-1.52-1.12-1.52-.92-.64.07-.63.07-.63 1.02.07 1.56 1.07 1.56 1.07.9 1.58 2.36 1.12 2.94.86.09-.67.35-1.12.63-1.38-2.22-.26-4.56-1.14-4.56-5.08 0-1.12.39-2.04 1.03-2.76-.1-.26-.45-1.32.1-2.74 0 0 .84-.27 2.75 1.05a9.3 9.3 0 015 0c1.9-1.32 2.74-1.05 2.74-1.05.56 1.42.2 2.48.1 2.74.64.72 1.03 1.64 1.03 2.76 0 3.95-2.34 4.82-4.57 5.08.36.32.68.94.68 1.9 0 1.38-.01 2.5-.01 2.84 0 .26.18.58.69.48A10.3 10.3 0 0022 12.24C22 6.58 17.52 2 12 2z"/></svg></span>
+      <span>Follow me on GitHub</span>
+    </a>
+    <a class="social-pill" href="https://viralmaniar.github.io/" target="_blank" rel="noopener">
+      <span class="social-pill__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 2h9l5 5v15a2 2 0 01-2 2H6a2 2 0 01-2-2V4a2 2 0 012-2zm8 1v5h5"/><path d="M8 11h8v2H8zm0 4h8v2H8zm0-8h4v2H8z"/></svg></span>
+      <span>Read my blog</span>
+    </a>
+    <a class="social-pill social-pill--accent" href="https://www.preemptivecybersec.com/" target="_blank" rel="noopener">
+      <span class="social-pill__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 6V4a2 2 0 012-2h2a2 2 0 012 2v2h4a2 2 0 012 2v3H3V8a2 2 0 012-2h4zm2 0h2V4h-2v2z"/><path d="M3 12h8v2a1 1 0 001 1h2a1 1 0 001-1v-2h8v7a2 2 0 01-2 2H5a2 2 0 01-2-2v-7z"/></svg></span>
+      <span>Hire me</span>
+    </a>
+  </div>
+</footer>
+    </div>
+    <script id="records-json" type="application/json">[{"id": "1a0d7003-b9e8-482a-abda-18dfc7ebd206", "title": "Container image should be created with a non-root user", "priority": "HIGH", "details": "Ensure that a user for the container has been created. It is good practice to run the container as a non-root user, where possible.", "recommendation": "Creation of a non-root user can be done either via the 'USER' directive in the Dockerfile or through 'gosu' or similar where used as part of the 'CMD' or 'ENTRYPOINT' directives.", "category": "Best practices", "disabled": false, "origin": "Dockerfile"}, {"id": "4dda4ce0-ebbc-4f4c-8285-7f55287c229e", "title": "Ensure Content trust for Docker is Enabled", "priority": "MEDIUM", "details": "Docker version 1.8 introduces Content Trust, which allows you to verify the authenticity, integrity, and publication date of Docker images that are made available on the Docker Hub Registry.", "recommendation": "Content Trust is disabled by default. To enable Content Trust for signing and verifying images, set the DOCKER_CONTENT_TRUST environment variable to 1. See - https://docs.docker.com/engine/security/trust/", "category": "Best practices", "disabled": false, "origin": null}, {"id": "dd6e59e1-9665-4a21-893e-57da793cbe8f", "title": "Ensure that HEALTHCHECK instruction is defined", "priority": "LOW", "details": "The HEALTHCHECK directive indicate if the state of the container is normal. Based on the reported health status, the docker engine could then exit faulty containers and instantiate new ones. Note - Images used with Kubernetes for example do not benefit from a HEALTHCHECK instruction, as Kubernetes brings its own mechanisms to accomplish the same thing.", "recommendation": "Add HEALTHCHECK instruction in the dockerfile.", "category": "Best practices", "disabled": false, "origin": "Dockerfile"}, {"id": "8ab65d87-bda1-4ed5-ac9c-fabf2069eff9", "title": "Ensure update instructions are not used alone in Dockerfiles", "priority": "HIGH", "details": "Do not use update instructions such as apt-get update on their own in the Dockerfile. Adding such update instruction, will cache the update layer which is non desirable", "recommendation": "Make sure no instructions (such as apt-get update) as listed  on their own in the Dockerfile.", "category": "Best practices", "disabled": false, "origin": "Dockerfile"}, {"id": "64f2c207-3536-48d6-9e60-74bb254cf820", "title": "Use COPY instead of ADD for files and folders", "priority": "LOW", "details": "Although ADD and COPY are functionally similar, generally and specifically for security hardening, COPY is preferred. see - https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#add-or-copy", "recommendation": "Make sure to switch all ADD instructions with COPY in the Dockerfile", "category": "Best practices", "disabled": false, "origin": "Dockerfile"}, {"id": "7671e7fe-ff50-4d7f-919f-8b7dd6500e49", "title": "Refrain from using sudo instructions", "priority": "HIGH", "details": "Do not use sudo as it leads to unpredictable behavior. Use a tool like gosu to enforce root. see - https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#user", "recommendation": "Avoid installing or using sudo. If you absolutely need functionality similar to sudo, such as initializing the daemon as root but running it as non-root, consider using “gosu”.", "category": "Best practices", "disabled": false, "origin": "Dockerfile"}, {"id": "86de59ec-6b87-49e1-bbc3-21bd966e57aa", "title": "Ensure 'apk add' is used with --no-cache", "priority": "MEDIUM", "details": "As of Alpine Linux 3.3 there exists a new --no-cache option for apk. It allows users to install packages with an index that is updated and used on-the-fly and not cached locally. see - https://github.com/gliderlabs/docker-alpine/blob/master/docs/usage.md#disabling-cache", "recommendation": "Use 'apk add' with --no-cache. This avoids the need to use --update and remove /var/cache/apk/* when done installing packages.", "category": "Insecure configurations", "disabled": false, "origin": "Dockerfile"}, {"id": "16bedbb4-3df1-4c2e-a464-b8c79d62be3b", "title": "Ensure 'apt-get' caches are cleared", "priority": "MEDIUM", "details": "When cleaning up the apt cache, by removing '/var/lib/apt/lists' it reduces the image size, since the apt cache is not stored in a layer. Since the RUN statement starts with apt-get update, the package cache is always refreshed prior to apt-get install. see - https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#apt-get", "recommendation": "Use 'apt-get clean && rm -rf /var/lib/apt/lists/*' after 'apt-get install'", "category": "Best practices", "disabled": false, "origin": "Dockerfile"}, {"id": "2e85a3aa-ee0c-4b07-a9ea-f3666e7fb8a4", "title": "Refrain from using latest tag", "priority": "LOW", "details": "Refrain from using latest tag. Always prefer fixed version instead when building/consuming images. see - https://vsupalov.com/docker-latest-tag/", "recommendation": "Tag/Use images with fixed version instead", "category": "Best practices", "disabled": false, "origin": null}, {"id": "ab977a48-5ff0-4982-b5fe-cf70d733cac6", "title": "Ensure there are no users without passwords", "priority": "HIGH", "details": "Having a user without a password in the container is bad practice that can lead to privilege escalation in certain scenarios", "recommendation": "To identify whether a user has a password or not, check that the second part of the user is not empty in '/etc/shadow' file (for example a line with 'root:::0:::::' indicate a root user without a password)", "category": "Best practices", "disabled": false, "origin": null}, {"id": "e10001c6-b264-4d08-ae6b-8b18a848748a", "title": "Ensure users have unique IDs", "priority": "HIGH", "details": "Contrary to popular belief, it is not necessary that each entry in the UID field be unique. However, non-unique UIDs can cause security problems, and thus UIDs should be kept unique. see - http://www.linfo.org/uid.html", "recommendation": "To identify whether users have unique IDs, check that the third part of the row (UID) are unique in '/etc/passwd' file.", "category": "Best practices", "disabled": false, "origin": null}, {"id": "88a6ff29-a015-4980-b347-8402cf38e49a", "title": "Ensure setuid and setgid permissions are removed", "priority": "LOW", "details": "Removing setuid and setgid permissions in the images can prevent privilege escalation attacks within containers.", "recommendation": "You should allow setuid and setgid permissions only on executables which require them. You could remove these permissions at build time by adding the following command in your Dockerfile, preferably towards the end of the Dockerfile: 'RUN find / -perm /6000 -type f -exec chmod a-s {} \\; || true'", "category": "Insecure configurations", "disabled": false, "origin": "Dockerfile"}, {"id": "872208a2-789b-460a-840d-f177422e91ac", "title": "Ensure no sensitive volumes are mounted", "priority": "HIGH", "details": "Sensitive directories (/dev, /proc, /sys) should not be mounted to the container image to reduce the attack surface", "recommendation": "Make sure there are no unnecessarily mounted volumes (/dev, /proc, /sys)", "category": "Best practices", "disabled": false, "origin": null}, {"id": "cff5a861-eddf-4b59-bc25-9c415900dc76", "title": "Unsupported Host OS", "priority": "HIGH", "details": "The Installed operating system has reached end of support and does not get security patches. This leaves the system vulnerable to many security issues that can be exploited.", "recommendation": "Please visit the vendor web site and update the system to the latest version as soon as possible", "category": "Insecure configurations", "disabled": false, "origin": "Dockerfile"}]</script>
+    <script>
+      function readData(){
+        try { return JSON.parse(document.getElementById('records-json').textContent); } catch(e){ return []; }
+      }
+      const DATA = readData();
+
+      const state = { search:'', sortKey:'priority', sortDir:'asc', prio:new Set() };
+      const table = document.getElementById('records-table');
+      const tbody = table.querySelector('tbody');
+      const search = document.getElementById('record-search');
+      const countEl = document.getElementById('record-count');
+      const filterHost = document.getElementById('record-filter-buttons');
+
+      function escapeHtml(s){
+        const str = String(s);
+        return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+      }
+      const prioRank = { 'HIGH':0, 'MEDIUM':1, 'LOW':2 };
+      function cmp(a,b){ return a<b?-1:a>b?1:0; }
+
+      function applyFilters(rows){
+        let out = rows;
+        const q = state.search.trim().toLowerCase();
+        if (q){
+          out = out.filter(r => (
+            String(r.id||'').toLowerCase().includes(q) ||
+            String(r.title||'').toLowerCase().includes(q) ||
+            String(r.category||'').toLowerCase().includes(q) ||
+            String(r.origin||'').toLowerCase().includes(q)
+          ));
+        }
+        if (state.prio.size){
+          out = out.filter(r => state.prio.has(String(r.priority||'').toUpperCase()));
+        }
+        return out;
+      }
+
+      function applySort(rows){
+        const key = state.sortKey; const dir = state.sortDir==='asc'?1:-1;
+        return [...rows].sort((a,b)=>{
+          let av=a[key], bv=b[key];
+          if (key==='priority'){ av = prioRank[String(av||'').toUpperCase()] ?? 99; bv = prioRank[String(bv||'').toUpperCase()] ?? 99; }
+          else if (key==='disabled'){ av = a.disabled===true?1:0; bv = b.disabled===true?1:0; }
+          else { av = String(av||'').toLowerCase(); bv = String(bv||'').toLowerCase(); }
+          return dir*cmp(av,bv);
+        });
+      }
+
+      function render(){
+        const filtered = applyFilters(DATA);
+        const sorted = applySort(filtered);
+        tbody.innerHTML = sorted.map(r => (
+          '<tr>'+
+          '<td>'+escapeHtml(r.title||'')+'</td>'+
+          '<td>'+escapeHtml(r.priority||'')+'</td>'+
+          '<td>'+escapeHtml(r.category||'')+'</td>'+
+          '<td>'+escapeHtml(r.origin||'')+'</td>'+
+          '<td>'+(r.disabled===true?'Yes':'No')+'</td>'+
+          '</tr>'
+        )).join('');
+        countEl.textContent = String(sorted.length)+' records';
+      }
+
+      // Sorting
+      table.querySelectorAll('thead th').forEach(th=>{
+        const key = th.getAttribute('data-sort');
+        if (!key) return;
+        th.addEventListener('click', ()=>{
+          if (state.sortKey===key) state.sortDir = state.sortDir==='asc'?'desc':'asc'; else { state.sortKey = key; state.sortDir='asc'; }
+          table.querySelectorAll('thead th').forEach(x=>x.setAttribute('data-dir', x===th?state.sortDir:''));
+          render();
+        });
+      });
+
+      // Search
+      let deb; search.addEventListener('input', ()=>{ clearTimeout(deb); deb=setTimeout(()=>{ state.search = search.value; render(); }, 120); });
+
+      // Filter chips
+      ['HIGH','MEDIUM','LOW'].forEach(p=>{
+        const btn = document.createElement('button');
+        btn.textContent = p;
+        btn.addEventListener('click', ()=>{ if (state.prio.has(p)) state.prio.delete(p); else state.prio.add(p); btn.classList.toggle('active'); render(); });
+        filterHost.appendChild(btn);
+      });
+
+      render();
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
